@@ -1,9 +1,9 @@
 #!/usr/bin/env pwsh
 
 # Clone
-git clone https://github.com/jurplel/QtApng.git
+git clone https://github.com/jdpurcell/QtApng.git
 cd QtApng
-git checkout 31bdace25eee2c35a351008c3886823f65e39447
+git checkout 4a74aac43eb0ba4787f9e8ef8cf0fb1ef6b14792
 
 
 
