@@ -1,6 +1,9 @@
-/usr/bin/env pwsh
+#!/usr/bin/env pwsh
 
-$kde_vers = 'v5.108.0'
+$qtVersion = ((qmake --version -split '\n')[1] -split ' ')[3]
+Write-Host "Detected Qt Version $qtVersion"
+
+$kde_vers = 'v5.115.0'
 
 # Clone
 git clone https://invent.kde.org/frameworks/kimageformats.git
@@ -12,8 +15,7 @@ if (-Not $IsWindows) {
     patch CMakeLists.txt ../util/kimageformats-find-libraw-vcpkg.patch 
 }
 
-
-# dependencies
+# Dependencies
 if ($IsWindows) {
     & "$env:GITHUB_WORKSPACE/pwsh/vcvars.ps1"
     choco install ninja pkgconfiglite
@@ -23,7 +25,6 @@ if ($IsWindows) {
 } else {
     sudo apt-get install ninja-build
 }
-
 
 & "$env:GITHUB_WORKSPACE/pwsh/buildecm.ps1" $kde_vers
 & "$env:GITHUB_WORKSPACE/pwsh/get-vcpkg-deps.ps1"
@@ -39,7 +40,7 @@ if ($IsMacOS) {
     $heifOn = "ON"
 }
 
-if ((qmake --version -split '\n')[1][17] -eq '6') {
+if ($qtVersion -like '6.*') {
     $qt6flag = "-DBUILD_WITH_QT6=ON"
 }
 
@@ -124,4 +125,3 @@ if ($IsMacOS) {
         install_name_tool -change /Users/runner/work/kimageformats-binaries/kimageformats-binaries/kimageformats/karchive/installed_arm64//libKF5Archive.5.dylib @rpath/libKF5Archive.5.dylib output/kimg_ora.so
     }
 }
-
