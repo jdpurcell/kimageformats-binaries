@@ -41,22 +41,48 @@ if ($IsWindows) {
     $env:VCPKG_DEFAULT_TRIPLET = "x64-osx"
 }
 
+# Set up overlay triplets
+$defaultTripletDir = "$env:VCPKG_ROOT/triplets"
+$overlayTripletDir = "$env:GITHUB_WORKSPACE/triplets-overlay"
+New-Item -ItemType Directory -Path $overlayTripletDir -Force
+function WriteOverlayTriplet {
+    $srcPath = "$defaultTripletDir/$env:VCPKG_DEFAULT_TRIPLET.cmake"
+    $dstPath = "$overlayTripletDir/$env:VCPKG_DEFAULT_TRIPLET.cmake"
+    Copy-Item -Path $srcPath -Destination $dstPath -Force
+    Add-Content -Path $dstPath -Value $args[0]
+}
+if ($env:VCPKG_DEFAULT_TRIPLET -eq "x86-windows") {
+    # Attempted workaround for https://github.com/microsoft/vcpkg/issues/28389
+    # Tried setting VCPKG_MAX_CONCURRENCY inside the overlay file too, but seemed 
+    # like it wasn't taking effect, so that part gets set via PowerShell later.
+    # None of this ended up fixing the problem unfortunately.
+    WriteOverlayTriplet @"
+if(PORT MATCHES "aom")
+    string(APPEND VCPKG_C_FLAGS " /Zm2000 ")
+    string(APPEND VCPKG_CXX_FLAGS " /Zm2000 ")
+endif()
+"@
+}
+
 # Get our dependencies using vcpkg!
 if ($IsWindows) {
     $vcpkgexec = "vcpkg.exe"
 } else {
     $vcpkgexec = "vcpkg"
 }
-& "$env:VCPKG_ROOT/$vcpkgexec" install --keep-going libjxl libavif openexr zlib libraw
 
+$env:VCPKG_MAX_CONCURRENCY = "1"
+& "$env:VCPKG_ROOT/$vcpkgexec" install --keep-going --overlay-triplets $overlayTripletDir libavif
+$env:VCPKG_MAX_CONCURRENCY = ""
+
+& "$env:VCPKG_ROOT/$vcpkgexec" install --keep-going --overlay-triplets $overlayTripletDir libjxl openexr zlib libraw
 
 # No point to building libheif on mac since Qt has built-in support for HEIF on macOS. Also, this avoids CI problems.
 if (-Not $IsMacOS) {
-    & "$env:VCPKG_ROOT/$vcpkgexec" install libheif
+    & "$env:VCPKG_ROOT/$vcpkgexec" install --overlay-triplets $overlayTripletDir libheif
 }
 
 # Build arm64-osx dependencies separately--we'll have to combine stuff later.
 if ($env:universalBinary) {
-    & "$env:VCPKG_ROOT/$vcpkgexec" install --keep-going libjxl:arm64-osx libavif:arm64-osx openexr:arm64-osx zlib:arm64-osx libraw:arm64-osx
+    & "$env:VCPKG_ROOT/$vcpkgexec" install --keep-going --overlay-triplets $overlayTripletDir libjxl:arm64-osx libavif:arm64-osx openexr:arm64-osx zlib:arm64-osx libraw:arm64-osx
 }
-
