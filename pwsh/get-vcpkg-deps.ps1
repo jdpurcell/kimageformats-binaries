@@ -47,8 +47,13 @@ if ($IsWindows) {
 } else {
     $vcpkgexec = "vcpkg"
 }
-& "$env:VCPKG_ROOT/$vcpkgexec" install --keep-going libjxl libavif openexr zlib libraw
 
+& "$env:VCPKG_ROOT/$vcpkgexec" install --keep-going libjxl openexr zlib libraw
+
+# libavif includes aom which refuses to build on x86-windows despite trying workarounds mentioned in https://github.com/microsoft/vcpkg/issues/28389
+if ($env:VCPKG_DEFAULT_TRIPLET -ne "x86-windows") {
+    & "$env:VCPKG_ROOT/$vcpkgexec" install --keep-going libavif
+}
 
 # No point to building libheif on mac since Qt has built-in support for HEIF on macOS. Also, this avoids CI problems.
 if (-Not $IsMacOS) {
@@ -57,6 +62,5 @@ if (-Not $IsMacOS) {
 
 # Build arm64-osx dependencies separately--we'll have to combine stuff later.
 if ($env:universalBinary) {
-    & "$env:VCPKG_ROOT/$vcpkgexec" install --keep-going libjxl:arm64-osx libavif:arm64-osx openexr:arm64-osx zlib:arm64-osx libraw:arm64-osx
+    & "$env:VCPKG_ROOT/$vcpkgexec" install --keep-going libjxl:arm64-osx openexr:arm64-osx zlib:arm64-osx libraw:arm64-osx libavif:arm64-osx
 }
-
