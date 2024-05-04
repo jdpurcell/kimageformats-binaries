@@ -15,11 +15,11 @@ jobs:
           - os: ubuntu-20.04
             vers: '5.15.2'
           - os: macos-12
-            vers: '6.4.3'
+            vers: '6.5.3'
           - os: macos-12
             vers: '5.15.2'
           - os: windows-2019
-            vers: '6.4.3'
+            vers: '6.5.3'
             forceWin32: 'false'
             arch: 'win64_msvc2019_64'
           - os: windows-2019
@@ -48,14 +48,14 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: qtapng-${{ matrix.os }}-${{ matrix.vers }}${{ matrix.arch && format('-{0}', matrix.arch) || '' }}
-          path: QtApng/plugins
+          path: QtApng/output
 
       - name: 'Zip Artifact'
         if: github.ref == 'refs/heads/master'
         uses: thedoctor0/zip-release@0.7.1
         with:
           type: 'zip'
-          path: QtApng/plugins/
+          path: QtApng/output/
           filename: "qtapng-${{ matrix.os }}-${{ matrix.vers }}${{ matrix.arch && format('-{0}', matrix.arch) || '' }}.zip"
 
       - name: 'Upload to continous release'
