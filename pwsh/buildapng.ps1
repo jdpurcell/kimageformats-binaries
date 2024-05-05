@@ -1,25 +1,21 @@
 #!/usr/bin/env pwsh
 
-$qtVersion = ((qmake --version -split '\n')[1] -split ' ')[3]
+$qtVersion = [version]((qmake --version -split '\n')[1] -split ' ')[3]
 Write-Host "Detected Qt Version $qtVersion"
 
-$useQmake = $qtVersion -like '5.*' -or $qtVersion -like '6.[0-4].*'
-$universalBinary = $IsMacOS -and $qtVersion -notlike '5.*'
+$useCmake = $qtVersion -ge [version]"6.5"
+$universalBinary = $IsMacOS -and $qtVersion -ge [version]"6.0"
 
 # Clone
 git clone https://github.com/jdpurcell/QtApng.git
 cd QtApng
-if ($useQmake) {
-    git checkout qmake
-} else {
-    git checkout cmake
-}
+git checkout master
 
 # Dependencies
 if ($IsWindows) {
     & "$env:GITHUB_WORKSPACE/pwsh/vcvars.ps1"
 }
-if (-not $useQmake) {
+if ($useCmake) {
     if ($IsWindows) {
         choco install ninja pkgconfiglite
     } elseif ($IsMacOS) {
@@ -31,7 +27,7 @@ if (-not $useQmake) {
 }
 
 # Build
-if ($useQmake) {
+if (-not $useCmake) {
     mkdir build
     cd build
 
@@ -60,7 +56,7 @@ $outputDir = "output"
 mkdir $outputDir
 $files = Get-ChildItem -Path "build/plugins/imageformats" | Where-Object { $_.Extension -in ".dylib", ".dll", ".so" }
 foreach ($file in $files) {
-    if ($universalBinary -and -not $useQmake) {
+    if ($universalBinary -and $useCmake) {
         $name = $file.Name
         lipo -create "$file" "build_arm64/plugins/imageformats/$name" -output "$outputDir/$name"
         lipo -info "$outputDir/$name"

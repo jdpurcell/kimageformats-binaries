@@ -1,6 +1,6 @@
 #!/usr/bin/env pwsh
 
-$qtVersion = ((qmake --version -split '\n')[1] -split ' ')[3]
+$qtVersion = [version]((qmake --version -split '\n')[1] -split ' ')[3]
 Write-Host "Detected Qt Version $qtVersion"
 
 $kde_vers = 'v5.115.0'
@@ -40,7 +40,7 @@ if ($IsMacOS) {
     $heifOn = "ON"
 }
 
-if ($qtVersion -like '6.*') {
+if ($qtVersion.Major -eq 6) {
     $qt6flag = "-DBUILD_WITH_QT6=ON"
 }
 
