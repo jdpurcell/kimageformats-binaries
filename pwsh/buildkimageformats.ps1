@@ -18,6 +18,16 @@ if (-Not $IsWindows) {
 # Dependencies
 if ($IsWindows) {
     & "$env:GITHUB_WORKSPACE/pwsh/vcvars.ps1"
+} elseif ($IsMacOS) {
+    if ($qtVersion -ge [version]"6.5.3") {
+        # GitHub macOS 13/14 runners use Xcode 15.0.x by default which has a known linker issue causing crashes if the artifact is run on macOS <= 12
+        sudo xcode-select --switch /Applications/Xcode_15.3.app
+    } else {
+        # Keep older Qt versions on Xcode 14 due to concern over QTBUG-117484
+        sudo xcode-select --switch /Applications/Xcode_14.3.1.app
+    }
+}
+if ($IsWindows) {
     choco install ninja pkgconfiglite
 } elseif ($IsMacOS) {
     brew update
@@ -42,6 +52,9 @@ if ($IsMacOS) {
 
 if ($qtVersion.Major -eq 6) {
     $qt6flag = "-DBUILD_WITH_QT6=ON"
+} elseif ($IsMacOS -and $qtVersion.Major -eq 5) {
+    $argTargetTriplet = "-DVCPKG_TARGET_TRIPLET=x64-osx"
+    $argDeviceArchs = "-DCMAKE_OSX_ARCHITECTURES=x86_64"
 }
 
 # Resolve pthread error on linux
@@ -50,7 +63,7 @@ if (-Not $IsWindows) {
 }
 
 # Build kimageformats
-cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$PWD/installed" -DKIMAGEFORMATS_JXL=ON -DKIMAGEFORMATS_HEIF=$heifOn $qt6flag -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" .
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$PWD/installed" -DKIMAGEFORMATS_JXL=ON -DKIMAGEFORMATS_HEIF=$heifOn $qt6flag -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" $argTargetTriplet $argDeviceArchs .
 
 ninja
 ninja install
@@ -61,16 +74,16 @@ $prefix_out = "output"
 # Make output folder
 mkdir -p $prefix_out
 
-# Build arm64 version as well and macos and lipo them together
+# Build intel version as well and macos and lipo them together
 if ($env:universalBinary) {
-    Write-Host "Building arm64 binaries"
+    Write-Host "Building intel binaries"
 
     rm -rf CMakeFiles/
     rm -rf CMakeCache.txt
     
-    $env:KF5Archive_DIR = $env:KF5Archive_DIR_ARM
+    $env:KF5Archive_DIR = $env:KF5Archive_DIR_INTEL
 
-    cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$PWD/installed_arm64" -DKIMAGEFORMATS_JXL=ON -DKIMAGEFORMATS_HEIF=$heifOn $qt6flag -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET="arm64-osx" -DCMAKE_OSX_ARCHITECTURES="arm64" .
+    cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$PWD/installed_intel" -DKIMAGEFORMATS_JXL=ON -DKIMAGEFORMATS_HEIF=$heifOn $qt6flag -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET="x64-osx" -DCMAKE_OSX_ARCHITECTURES="x86_64" .
 
     ninja
     ninja install
@@ -78,13 +91,13 @@ if ($env:universalBinary) {
     Write-Host "Combining kimageformats binaries to universal"
 
     $prefix = "installed/lib/plugins/imageformats"
-    $prefix_arm = "installed_arm64/lib/plugins/imageformats"
+    $prefix_intel = "installed_intel/lib/plugins/imageformats"
 
     # Combine the two binaries and copy them to the output folder
     $files = Get-ChildItem "$prefix" -Recurse -Filter *.so
     foreach ($file in $files) {
         $name = $file.Name
-        lipo -create "$file" "$prefix_arm/$name" -output "$prefix_out/$name"
+        lipo -create "$file" "$prefix_intel/$name" -output "$prefix_out/$name"
         lipo -info "$prefix_out/$name"
     }
 
@@ -92,7 +105,7 @@ if ($env:universalBinary) {
     $files = Get-ChildItem "karchive/installed/lib/" -Recurse -Filter *.dylib
     foreach ($file in $files) {
         $name = $file.Name
-        lipo -create "$file" "karchive/installed_arm64/lib/$name" -output "$prefix_out/$name"
+        lipo -create "$file" "karchive/installed_intel/lib/$name" -output "$prefix_out/$name"
         lipo -info "$prefix_out/$name"
     }
 } else {
@@ -121,7 +134,7 @@ if ($IsMacOS) {
     install_name_tool -change /Users/runner/work/kimageformats-binaries/kimageformats-binaries/kimageformats/karchive/installed//libKF5Archive.5.dylib @rpath/libKF5Archive.5.dylib output/kimg_ora.so
 
     if ($env:universalBinary) {
-        install_name_tool -change /Users/runner/work/kimageformats-binaries/kimageformats-binaries/kimageformats/karchive/installed_arm64//libKF5Archive.5.dylib @rpath/libKF5Archive.5.dylib output/kimg_kra.so
-        install_name_tool -change /Users/runner/work/kimageformats-binaries/kimageformats-binaries/kimageformats/karchive/installed_arm64//libKF5Archive.5.dylib @rpath/libKF5Archive.5.dylib output/kimg_ora.so
+        install_name_tool -change /Users/runner/work/kimageformats-binaries/kimageformats-binaries/kimageformats/karchive/installed_intel//libKF5Archive.5.dylib @rpath/libKF5Archive.5.dylib output/kimg_kra.so
+        install_name_tool -change /Users/runner/work/kimageformats-binaries/kimageformats-binaries/kimageformats/karchive/installed_intel//libKF5Archive.5.dylib @rpath/libKF5Archive.5.dylib output/kimg_ora.so
     }
 }

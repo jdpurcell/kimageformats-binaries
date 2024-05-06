@@ -14,6 +14,14 @@ git checkout master
 # Dependencies
 if ($IsWindows) {
     & "$env:GITHUB_WORKSPACE/pwsh/vcvars.ps1"
+} elseif ($IsMacOS) {
+    if ($qtVersion -ge [version]"6.5.3") {
+        # GitHub macOS 13/14 runners use Xcode 15.0.x by default which has a known linker issue causing crashes if the artifact is run on macOS <= 12
+        sudo xcode-select --switch /Applications/Xcode_15.3.app
+    } else {
+        # Keep older Qt versions on Xcode 14 due to concern over QTBUG-117484
+        sudo xcode-select --switch /Applications/Xcode_14.3.1.app
+    }
 }
 if ($useCmake) {
     if ($IsWindows) {
@@ -31,7 +39,7 @@ if (-not $useCmake) {
     mkdir build
     cd build
 
-    $argDeviceArchs = $universalBinary ? "QMAKE_APPLE_DEVICE_ARCHS=x86_64 arm64" : $null;
+    $argDeviceArchs = $universalBinary ? "QMAKE_APPLE_DEVICE_ARCHS=x86_64 arm64" : $null
     qmake .. CONFIG+=libpng_static $argDeviceArchs
 
     if ($IsWindows) {
@@ -46,8 +54,8 @@ if (-not $useCmake) {
     ninja -C build
 
     if ($universalBinary) {
-        cmake -B build_arm64 -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES=arm64
-        ninja -C build_arm64
+        cmake -B build_intel -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES=x86_64
+        ninja -C build_intel
     }
 }
 
@@ -58,7 +66,7 @@ $files = Get-ChildItem -Path "build/plugins/imageformats" | Where-Object { $_.Ex
 foreach ($file in $files) {
     if ($universalBinary -and $useCmake) {
         $name = $file.Name
-        lipo -create "$file" "build_arm64/plugins/imageformats/$name" -output "$outputDir/$name"
+        lipo -create "$file" "build_intel/plugins/imageformats/$name" -output "$outputDir/$name"
         lipo -info "$outputDir/$name"
     } else {
         Copy-Item -Path $file -Destination $outputDir
