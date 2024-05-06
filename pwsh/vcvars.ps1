@@ -1,12 +1,11 @@
-# Script assumes $env:arch will start with win64 or win32
-# This should probably be an arg
-$arch = if ([Environment]::Is64BitOperatingSystem -and ($env:forceWin32 -ne 'true')) { "64" } else { "32" }
-$path = Resolve-Path "${env:ProgramFiles(x86)}\Microsoft Visual Studio\*\*\VC\Auxiliary\Build" | select -ExpandProperty Path
+$arch = [Environment]::Is64BitOperatingSystem -and $env:forceWin32 -ne 'true' ? '64' : '32'
+$path = Resolve-Path "${env:ProgramFiles}\Microsoft Visual Studio\*\*\VC\Auxiliary\Build" | select -ExpandProperty Path
 
 cmd.exe /c "call `"$path\vcvars$arch.bat`" && set > %temp%\vcvars.txt"
 
+$exclusions = @('VCPKG_ROOT')
 Get-Content "$env:temp\vcvars.txt" | Foreach-Object {
-  if ($_ -match "^(.*?)=(.*)$") {
-    Set-Content "env:\$($matches[1])" $matches[2]
+  if ($_ -match "^(.*?)=(.*)$" -and $matches[1] -notin $exclusions) {
+    [Environment]::SetEnvironmentVariable($matches[1], $matches[2])
   }
 }
