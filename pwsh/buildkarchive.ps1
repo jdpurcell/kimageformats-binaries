@@ -8,21 +8,18 @@ cd karchive
 git checkout $args[0]
 
 if ($IsWindows) {
-    if ([Environment]::Is64BitOperatingSystem -and ($env:forceWin32 -ne 'true')) {
-        $env:VCPKG_DEFAULT_TRIPLET = "x64-windows"
-    }
-    # vcvars on windows
     & "$env:GITHUB_WORKSPACE\pwsh\vcvars.ps1"
-}
-
-# don't use homebrew zlib/zstd 
-if ($IsMacOS) {
+} elseif ($IsMacOS) {
+    # don't use homebrew zlib/zstd
     brew uninstall --ignore-dependencies zlib
     brew uninstall --ignore-dependencies zstd
 }
 
 if ($qtVersion.Major -eq 6) {
     $qt6flag = "-DBUILD_WITH_QT6=ON"
+}
+if ($IsWindows -and [Environment]::Is64BitOperatingSystem -and $env:forceWin32 -eq 'true') {
+    $argTargetTriplet = "-DVCPKG_TARGET_TRIPLET=x86-windows"
 } elseif ($IsMacOS -and $qtVersion.Major -eq 5) {
     $argTargetTriplet = "-DVCPKG_TARGET_TRIPLET=x64-osx"
     $argDeviceArchs = "-DCMAKE_OSX_ARCHITECTURES=x86_64"
@@ -35,7 +32,7 @@ ninja
 ninja install
 
 # Build intel version as well and macos and lipo them together
-if ($env:universalBinary) {
+if ($env:universalBinary -eq 'true') {
     Write-Host "Building intel binaries"
 
     rm -rf CMakeFiles/
@@ -54,7 +51,7 @@ try {
 
     cd ../
 
-    if ($env:universalBinary) {
+    if ($env:universalBinary -eq 'true') {
         cd installed_intel/ -ErrorAction Stop
 
         $env:KF5Archive_DIR_INTEL = Split-Path -Path (Get-Childitem -Include KF5ArchiveConfig.cmake -Recurse -ErrorAction SilentlyContinue)[0]

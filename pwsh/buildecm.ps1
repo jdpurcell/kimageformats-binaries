@@ -14,7 +14,7 @@ if ($IsWindows) {
 
 # Build
 $argDeviceArchs = `
-    $universalBinary ? "-DCMAKE_OSX_ARCHITECTURES=x86_64;arm64" : `
+    $env:universalBinary -eq 'true' ? "-DCMAKE_OSX_ARCHITECTURES=x86_64;arm64" : `
     $IsMacOS -and $qtVersion.Major -eq 5 ? "-DCMAKE_OSX_ARCHITECTURES=x86_64" : `
     $null
 cmake -G Ninja . $argDeviceArchs

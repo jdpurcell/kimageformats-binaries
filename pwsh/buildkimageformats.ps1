@@ -38,10 +38,7 @@ if ($IsWindows) {
 
 & "$env:GITHUB_WORKSPACE/pwsh/buildecm.ps1" $kde_vers
 & "$env:GITHUB_WORKSPACE/pwsh/get-vcpkg-deps.ps1"
-
-if ($env:forceWin32 -ne 'true') {
-    & "$env:GITHUB_WORKSPACE/pwsh/buildkarchive.ps1" $kde_vers
-}
+& "$env:GITHUB_WORKSPACE/pwsh/buildkarchive.ps1" $kde_vers
 
 # HEIF not necessary on macOS since it ships with HEIF support
 if ($IsMacOS) {
@@ -52,6 +49,9 @@ if ($IsMacOS) {
 
 if ($qtVersion.Major -eq 6) {
     $qt6flag = "-DBUILD_WITH_QT6=ON"
+}
+if ($IsWindows -and [Environment]::Is64BitOperatingSystem -and $env:forceWin32 -eq 'true') {
+    $argTargetTriplet = "-DVCPKG_TARGET_TRIPLET=x86-windows"
 } elseif ($IsMacOS -and $qtVersion.Major -eq 5) {
     $argTargetTriplet = "-DVCPKG_TARGET_TRIPLET=x64-osx"
     $argDeviceArchs = "-DCMAKE_OSX_ARCHITECTURES=x86_64"
@@ -75,7 +75,7 @@ $prefix_out = "output"
 mkdir -p $prefix_out
 
 # Build intel version as well and macos and lipo them together
-if ($env:universalBinary) {
+if ($env:universalBinary -eq 'true') {
     Write-Host "Building intel binaries"
 
     rm -rf CMakeFiles/
@@ -119,7 +119,8 @@ if ($env:universalBinary) {
     if ($IsWindows) {
         cp karchive/bin/*.dll $prefix_out
         # Also copy all the vcpkg DLLs on windows, since it's apparently not static by default
-        cp "$env:VCPKG_ROOT/installed/$env:VCPKG_DEFAULT_TRIPLET/bin/*.dll" $prefix_out
+        $triplet = [Environment]::Is64BitOperatingSystem -and $env:forceWin32 -ne 'true' ? "x64-windows" : "x86-windows"
+        cp "$env:VCPKG_ROOT/installed/$triplet/bin/*.dll" $prefix_out
     } elseif ($IsMacOS) {
         cp karchive/bin/*.dylib $prefix_out
     } else {
@@ -133,7 +134,7 @@ if ($IsMacOS) {
     install_name_tool -change /Users/runner/work/kimageformats-binaries/kimageformats-binaries/kimageformats/karchive/installed//libKF5Archive.5.dylib @rpath/libKF5Archive.5.dylib output/kimg_kra.so
     install_name_tool -change /Users/runner/work/kimageformats-binaries/kimageformats-binaries/kimageformats/karchive/installed//libKF5Archive.5.dylib @rpath/libKF5Archive.5.dylib output/kimg_ora.so
 
-    if ($env:universalBinary) {
+    if ($env:universalBinary -eq 'true') {
         install_name_tool -change /Users/runner/work/kimageformats-binaries/kimageformats-binaries/kimageformats/karchive/installed_intel//libKF5Archive.5.dylib @rpath/libKF5Archive.5.dylib output/kimg_kra.so
         install_name_tool -change /Users/runner/work/kimageformats-binaries/kimageformats-binaries/kimageformats/karchive/installed_intel//libKF5Archive.5.dylib @rpath/libKF5Archive.5.dylib output/kimg_ora.so
     }

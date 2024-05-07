@@ -2,8 +2,8 @@
 
 # Install vcpkg if we don't already have it
 if ($env:VCPKG_ROOT -eq $null) {
-  git clone https://github.com/microsoft/vcpkg
-  $env:VCPKG_ROOT = "$PWD/vcpkg/"
+    git clone https://github.com/microsoft/vcpkg
+    $env:VCPKG_ROOT = "$PWD/vcpkg/"
 }
 
 # Bootstrap VCPKG again
@@ -19,25 +19,16 @@ if ($IsWindows) {
     choco install nasm
 } elseif ($IsMacOS) {
     brew install nasm
-# Remove this package on macOS because it caues problems
+    # Remove this package on macOS because it causes problems
     brew uninstall --ignore-dependencies webp # Avoid linking to homebrew stuff later
 } else {
     # (and bonus dependencies)
     sudo apt-get install nasm libxi-dev libgl1-mesa-dev libglu1-mesa-dev mesa-common-dev libxrandr-dev libxxf86vm-dev
 }
 
-# Set up prefixes
-if ($IsWindows) {
-    & "$env:GITHUB_WORKSPACE\pwsh\vcvars.ps1"
-    
-    # Use environment variable to detect if we're building for 64-bit or 32-bit Windows 
-    if ([Environment]::Is64BitOperatingSystem -and ($env:forceWin32 -ne 'true')) {
-        $env:VCPKG_DEFAULT_TRIPLET = "x64-windows"
-    } else {
-        $env:VCPKG_DEFAULT_TRIPLET = "x86-windows"
-    }
-} elseif ($IsMacOS) {
-    # Makes things more reproducible for testing on M1 machines
+if ($IsWindows -and [Environment]::Is64BitOperatingSystem -and $env:forceWin32 -eq 'true') {
+    $env:VCPKG_DEFAULT_TRIPLET = "x86-windows"
+} elseif ($IsMacOS -and $qtVersion.Major -eq 5) {
     $env:VCPKG_DEFAULT_TRIPLET = "x64-osx"
 }
 
@@ -48,19 +39,21 @@ if ($IsWindows) {
     $vcpkgexec = "vcpkg"
 }
 
-& "$env:VCPKG_ROOT/$vcpkgexec" install --keep-going libjxl openexr zlib libraw
+function InstallPackages() {
+    # libavif includes aom which refuses to build on x86-windows despite trying workarounds mentioned in https://github.com/microsoft/vcpkg/issues/28389
+    $libAvif = $env:VCPKG_DEFAULT_TRIPLET -ne "x86-windows" ? "libavif[aom]" : $null
+    # No point to building libheif on mac since Qt has built-in support for HEIF on macOS. Also, this avoids CI problems.
+    $libHeif = -not $IsMacOS ? "libheif" : $null
 
-# libavif includes aom which refuses to build on x86-windows despite trying workarounds mentioned in https://github.com/microsoft/vcpkg/issues/28389
-if ($env:VCPKG_DEFAULT_TRIPLET -ne "x86-windows") {
-    & "$env:VCPKG_ROOT/$vcpkgexec" install --keep-going libavif[aom]
+    & "$env:VCPKG_ROOT/$vcpkgexec" install libjxl openexr zlib libraw $libAvif $libHeif
 }
 
-# No point to building libheif on mac since Qt has built-in support for HEIF on macOS. Also, this avoids CI problems.
-if (-Not $IsMacOS) {
-    & "$env:VCPKG_ROOT/$vcpkgexec" install libheif
+InstallPackages
+
+# Build x64-osx dependencies separately--we'll have to combine stuff later.
+if ($env:universalBinary -eq 'true') {
+    $env:VCPKG_DEFAULT_TRIPLET = "x64-osx"
+    InstallPackages
 }
 
-# Build arm64-osx dependencies separately--we'll have to combine stuff later.
-if ($env:universalBinary) {
-    & "$env:VCPKG_ROOT/$vcpkgexec" install --keep-going libjxl:arm64-osx openexr:arm64-osx zlib:arm64-osx libraw:arm64-osx libavif[aom]:arm64-osx
-}
+$env:VCPKG_DEFAULT_TRIPLET = $null
