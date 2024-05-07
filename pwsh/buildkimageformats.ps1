@@ -138,3 +138,8 @@ if ($IsMacOS) {
         install_name_tool -change /Users/runner/work/kimageformats-binaries/kimageformats-binaries/kimageformats/karchive/installed_intel//libKF5Archive.5.dylib @rpath/libKF5Archive.5.dylib output/kimg_ora.so
     }
 }
+
+if ($IsWindows) {
+    Write-Host "`nDetecting plugin dependencies..."
+    & "$env:GITHUB_WORKSPACE/pwsh/scankimgdeps.ps1" $prefix_out
+}
