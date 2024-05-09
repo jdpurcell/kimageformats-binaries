@@ -40,12 +40,10 @@ if ($IsWindows) {
 }
 
 function InstallPackages() {
-    # libavif includes aom which refuses to build on x86-windows despite trying workarounds mentioned in https://github.com/microsoft/vcpkg/issues/28389
-    $libAvif = $env:VCPKG_DEFAULT_TRIPLET -ne "x86-windows" ? "libavif[aom]" : $null
     # No point to building libheif on mac since Qt has built-in support for HEIF on macOS. Also, this avoids CI problems.
     $libHeif = -not $IsMacOS ? "libheif" : $null
 
-    & "$env:VCPKG_ROOT/$vcpkgexec" install libjxl openexr zlib libraw $libAvif $libHeif
+    & "$env:VCPKG_ROOT/$vcpkgexec" install libjxl openexr zlib libraw libavif[aom] $libHeif
 }
 
 InstallPackages
