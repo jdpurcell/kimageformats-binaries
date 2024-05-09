@@ -40,13 +40,6 @@ if ($IsWindows) {
 & "$env:GITHUB_WORKSPACE/pwsh/get-vcpkg-deps.ps1"
 & "$env:GITHUB_WORKSPACE/pwsh/buildkarchive.ps1" $kde_vers
 
-# HEIF not necessary on macOS since it ships with HEIF support
-if ($IsMacOS) {
-    $heifOn = "OFF"
-} else {
-    $heifOn = "ON"
-}
-
 if ($qtVersion.Major -eq 6) {
     $qt6flag = "-DBUILD_WITH_QT6=ON"
 }
@@ -63,7 +56,7 @@ if (-Not $IsWindows) {
 }
 
 # Build kimageformats
-cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$PWD/installed" -DKIMAGEFORMATS_JXL=ON -DKIMAGEFORMATS_HEIF=$heifOn $qt6flag -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" $argTargetTriplet $argDeviceArchs .
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$PWD/installed" -DKIMAGEFORMATS_JXL=ON -DKIMAGEFORMATS_HEIF=ON $qt6flag -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" $argTargetTriplet $argDeviceArchs .
 
 ninja
 ninja install
@@ -83,7 +76,7 @@ if ($env:universalBinary -eq 'true') {
     
     $env:KF5Archive_DIR = $env:KF5Archive_DIR_INTEL
 
-    cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$PWD/installed_intel" -DKIMAGEFORMATS_JXL=ON -DKIMAGEFORMATS_HEIF=$heifOn $qt6flag -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET="x64-osx" -DCMAKE_OSX_ARCHITECTURES="x86_64" .
+    cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$PWD/installed_intel" -DKIMAGEFORMATS_JXL=ON -DKIMAGEFORMATS_HEIF=ON $qt6flag -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET="x64-osx" -DCMAKE_OSX_ARCHITECTURES="x86_64" .
 
     ninja
     ninja install

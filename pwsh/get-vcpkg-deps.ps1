@@ -40,10 +40,7 @@ if ($IsWindows) {
 }
 
 function InstallPackages() {
-    # No point to building libheif on mac since Qt has built-in support for HEIF on macOS. Also, this avoids CI problems.
-    $libHeif = -not $IsMacOS ? "libheif" : $null
-
-    & "$env:VCPKG_ROOT/$vcpkgexec" install libjxl openexr zlib libraw libavif[aom] $libHeif
+    & "$env:VCPKG_ROOT/$vcpkgexec" install libjxl openexr zlib libraw libavif[aom] libheif
 }
 
 InstallPackages
