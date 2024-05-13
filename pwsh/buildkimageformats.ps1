@@ -36,8 +36,8 @@ if ($IsWindows) {
     sudo apt-get install ninja-build
 }
 
-& "$env:GITHUB_WORKSPACE/pwsh/buildecm.ps1" $kde_vers
 & "$env:GITHUB_WORKSPACE/pwsh/get-vcpkg-deps.ps1"
+& "$env:GITHUB_WORKSPACE/pwsh/buildecm.ps1" $kde_vers
 & "$env:GITHUB_WORKSPACE/pwsh/buildkarchive.ps1" $kde_vers
 
 if ($qtVersion.Major -eq 6) {
@@ -73,7 +73,7 @@ if ($env:universalBinary -eq 'true') {
 
     rm -rf CMakeFiles/
     rm -rf CMakeCache.txt
-    
+
     $env:KF5Archive_DIR = $env:KF5Archive_DIR_INTEL
 
     cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$PWD/installed_intel" -DKIMAGEFORMATS_JXL=ON -DKIMAGEFORMATS_HEIF=ON $qt6flag -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET="x64-osx" -DCMAKE_OSX_ARCHITECTURES="x86_64" .
@@ -95,12 +95,9 @@ if ($env:universalBinary -eq 'true') {
     }
 
     # Combine karchive binaries too and send them to output
-    $files = Get-ChildItem "karchive/installed/lib/" -Recurse -Filter *.dylib
-    foreach ($file in $files) {
-        $name = $file.Name
-        lipo -create "$file" "karchive/installed_intel/lib/$name" -output "$prefix_out/$name"
-        lipo -info "$prefix_out/$name"
-    }
+    $name = "libKF5Archive.5.dylib"
+    lipo -create "karchive/installed/lib/$name" "karchive/installed_intel/lib/$name" -output "$prefix_out/$name"
+    lipo -info "$prefix_out/$name"
 } else {
     # Copy binaries from installed to output folder
     $files = dir ./installed/ -recurse | where {$_.extension -in ".dylib",".dll",".so"}
@@ -124,12 +121,12 @@ if ($env:universalBinary -eq 'true') {
 
 # Fix linking on macOS
 if ($IsMacOS) {
-    install_name_tool -change /Users/runner/work/kimageformats-binaries/kimageformats-binaries/kimageformats/karchive/installed//libKF5Archive.5.dylib @rpath/libKF5Archive.5.dylib output/kimg_kra.so
-    install_name_tool -change /Users/runner/work/kimageformats-binaries/kimageformats-binaries/kimageformats/karchive/installed//libKF5Archive.5.dylib @rpath/libKF5Archive.5.dylib output/kimg_ora.so
+    install_name_tool -change "$(Get-Location)/karchive/installed//libKF5Archive.5.dylib" @rpath/libKF5Archive.5.dylib output/kimg_kra.so
+    install_name_tool -change "$(Get-Location)/karchive/installed//libKF5Archive.5.dylib" @rpath/libKF5Archive.5.dylib output/kimg_ora.so
 
     if ($env:universalBinary -eq 'true') {
-        install_name_tool -change /Users/runner/work/kimageformats-binaries/kimageformats-binaries/kimageformats/karchive/installed_intel//libKF5Archive.5.dylib @rpath/libKF5Archive.5.dylib output/kimg_kra.so
-        install_name_tool -change /Users/runner/work/kimageformats-binaries/kimageformats-binaries/kimageformats/karchive/installed_intel//libKF5Archive.5.dylib @rpath/libKF5Archive.5.dylib output/kimg_ora.so
+        install_name_tool -change "$(Get-Location)/karchive/installed_intel//libKF5Archive.5.dylib" @rpath/libKF5Archive.5.dylib output/kimg_kra.so
+        install_name_tool -change "$(Get-Location)/karchive/installed_intel//libKF5Archive.5.dylib" @rpath/libKF5Archive.5.dylib output/kimg_ora.so
     }
 }
 

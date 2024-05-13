@@ -10,8 +10,8 @@ git checkout $args[0]
 if ($IsWindows) {
     & "$env:GITHUB_WORKSPACE\pwsh\vcvars.ps1"
 } elseif ($IsMacOS) {
-    # don't use homebrew zlib/zstd
-    brew uninstall --ignore-dependencies zlib
+    # Uninstall this because there's only one architecture installed, which
+    # prevents the other architecture of the universal binary from building
     brew uninstall --ignore-dependencies zstd
 }
 

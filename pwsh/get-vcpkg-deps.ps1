@@ -19,8 +19,6 @@ if ($IsWindows) {
     choco install nasm
 } elseif ($IsMacOS) {
     brew install nasm
-    # Remove this package on macOS because it causes problems
-    brew uninstall --ignore-dependencies webp # Avoid linking to homebrew stuff later
 } else {
     # (and bonus dependencies)
     sudo apt-get install nasm libxi-dev libgl1-mesa-dev libglu1-mesa-dev mesa-common-dev libxrandr-dev libxxf86vm-dev
