@@ -3,7 +3,9 @@
 $qtVersion = [version]((qmake --version -split '\n')[1] -split ' ')[3]
 Write-Host "Detected Qt Version $qtVersion"
 
-$kde_vers = 'v5.115.0'
+$kde_vers = $qtVersion -ge [version]'6.5.0' ? 'v6.2.0' : 'v5.115.0'
+$kfMajorVer = $kde_vers -like 'v5.*' ? 5 : 6
+$macKimgLibExt = $kfMajorVer -ge 6 ? '.dylib' : '.so'
 
 # Clone
 git clone https://invent.kde.org/frameworks/kimageformats.git
@@ -74,7 +76,7 @@ if ($env:universalBinary -eq 'true') {
     rm -rf CMakeFiles/
     rm -rf CMakeCache.txt
 
-    $env:KF5Archive_DIR = $env:KF5Archive_DIR_INTEL
+    [Environment]::SetEnvironmentVariable("KF$($kfMajorVer)Archive_DIR", [Environment]::GetEnvironmentVariable("KF$($kfMajorVer)Archive_DIR_INTEL"))
 
     cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$PWD/installed_intel" -DKIMAGEFORMATS_JXL=ON -DKIMAGEFORMATS_HEIF=ON $qt6flag -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET="x64-osx" -DCMAKE_OSX_ARCHITECTURES="x86_64" .
 
@@ -87,7 +89,7 @@ if ($env:universalBinary -eq 'true') {
     $prefix_intel = "installed_intel/lib/plugins/imageformats"
 
     # Combine the two binaries and copy them to the output folder
-    $files = Get-ChildItem "$prefix" -Recurse -Filter *.so
+    $files = Get-ChildItem "$prefix" -Recurse -Filter "*$macKimgLibExt"
     foreach ($file in $files) {
         $name = $file.Name
         lipo -create "$file" "$prefix_intel/$name" -output "$prefix_out/$name"
@@ -95,7 +97,7 @@ if ($env:universalBinary -eq 'true') {
     }
 
     # Combine karchive binaries too and send them to output
-    $name = "libKF5Archive.5.dylib"
+    $name = "libKF$($kfMajorVer)Archive.$($kfMajorVer).dylib"
     lipo -create "karchive/installed/lib/$name" "karchive/installed_intel/lib/$name" -output "$prefix_out/$name"
     lipo -info "$prefix_out/$name"
 } else {
@@ -114,19 +116,23 @@ if ($env:universalBinary -eq 'true') {
     } elseif ($IsMacOS) {
         cp karchive/bin/*.dylib $prefix_out
     } else {
-        $env:KF5LibLoc = Split-Path -Path (Get-Childitem -Include libKF5Archive.so.5 -Recurse -ErrorAction SilentlyContinue)[0]
-        cp $env:KF5LibLoc/* $prefix_out
+        $libLoc = Split-Path -Path (Get-Childitem -Include "libKF$($kfMajorVer)Archive.so.$($kfMajorVer)" -Recurse -ErrorAction SilentlyContinue)[0]
+        [Environment]::SetEnvironmentVariable("KF$($kfMajorVer)LibLoc", $libLoc)
+        cp $libLoc/* $prefix_out
     }
 }
 
 # Fix linking on macOS
 if ($IsMacOS) {
-    install_name_tool -change "$(Get-Location)/karchive/installed//libKF5Archive.5.dylib" @rpath/libKF5Archive.5.dylib output/kimg_kra.so
-    install_name_tool -change "$(Get-Location)/karchive/installed//libKF5Archive.5.dylib" @rpath/libKF5Archive.5.dylib output/kimg_ora.so
-
-    if ($env:universalBinary -eq 'true') {
-        install_name_tool -change "$(Get-Location)/karchive/installed_intel//libKF5Archive.5.dylib" @rpath/libKF5Archive.5.dylib output/kimg_kra.so
-        install_name_tool -change "$(Get-Location)/karchive/installed_intel//libKF5Archive.5.dylib" @rpath/libKF5Archive.5.dylib output/kimg_ora.so
+    $karchLibName = "libKF$($kfMajorVer)Archive.$($kfMajorVer)"
+    $libDirName = $kfMajorVer -ge 6 ? 'lib' : '' # empty name results in double slash in path which is intentional
+    foreach ($installDirName in @('installed') + ($env:universalBinary -eq 'true' ? @('installed_intel') : @())) {
+        $oldValue = "$(Get-Location)/karchive/$installDirName/$libDirName/$karchLibName.dylib"
+        $newValue = "@rpath/$karchLibName.dylib"
+        install_name_tool -id $newValue "$prefix_out/$karchLibName.dylib"
+        foreach ($kimgLibName in @('kimg_kra', 'kimg_ora')) {
+            install_name_tool -change $oldValue $newValue "$prefix_out/$kimgLibName$macKimgLibExt"
+        }
     }
 }
 

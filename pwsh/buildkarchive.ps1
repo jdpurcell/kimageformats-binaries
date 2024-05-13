@@ -2,10 +2,13 @@
 
 $qtVersion = [version]((qmake --version -split '\n')[1] -split ' ')[3]
 
+$kde_vers = $args[0]
+$kfMajorVer = $kde_vers -like 'v5.*' ? 5 : 6
+
 # Clone
 git clone https://invent.kde.org/frameworks/karchive.git
 cd karchive
-git checkout $args[0]
+git checkout $kde_vers
 
 if ($IsWindows) {
     & "$env:GITHUB_WORKSPACE\pwsh\vcvars.ps1"
@@ -26,7 +29,7 @@ if ($IsWindows -and [Environment]::Is64BitOperatingSystem -and $env:forceWin32 -
 }
 
 # Build
-cmake -G Ninja -DCMAKE_INSTALL_PREFIX="$PWD/installed/" -DCMAKE_BUILD_TYPE=Release $qt6flag -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" $argTargetTriplet $argDeviceArchs .
+cmake -G Ninja -DCMAKE_INSTALL_PREFIX="$PWD/installed/" -DCMAKE_BUILD_TYPE=Release $qt6flag -DWITH_BZIP2=OFF -DWITH_LIBLZMA=OFF -DWITH_LIBZSTD=OFF -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" $argTargetTriplet $argDeviceArchs .
 
 ninja
 ninja install
@@ -38,26 +41,24 @@ if ($env:universalBinary -eq 'true') {
     rm -rf CMakeFiles/
     rm -rf CMakeCache.txt
 
-    cmake -G Ninja -DCMAKE_INSTALL_PREFIX="$PWD/installed_intel/" -DCMAKE_BUILD_TYPE=Release $qt6flag -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET="x64-osx" -DCMAKE_OSX_ARCHITECTURES="x86_64" .
+    cmake -G Ninja -DCMAKE_INSTALL_PREFIX="$PWD/installed_intel/" -DCMAKE_BUILD_TYPE=Release $qt6flag -DWITH_BZIP2=OFF -DWITH_LIBLZMA=OFF -DWITH_LIBZSTD=OFF -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET="x64-osx" -DCMAKE_OSX_ARCHITECTURES="x86_64" .
 
     ninja
     ninja install
 }
 
-try {
-    cd installed/ -ErrorAction Stop
+function FindKArchiveDir() {
+    return Split-Path -Path (Get-Childitem -Include "KF$($kfMajorVer)ArchiveConfig.cmake" -Recurse -ErrorAction SilentlyContinue)[0]
+}
 
-    $env:KF5Archive_DIR = Split-Path -Path (Get-Childitem -Include KF5ArchiveConfig.cmake -Recurse -ErrorAction SilentlyContinue)[0]
+cd installed/ -ErrorAction Stop
+[Environment]::SetEnvironmentVariable("KF$($kfMajorVer)Archive_DIR", (FindKArchiveDir))
+cd ../
 
+if ($env:universalBinary -eq 'true') {
+    cd installed_intel/ -ErrorAction Stop
+    [Environment]::SetEnvironmentVariable("KF$($kfMajorVer)Archive_DIR_INTEL", (FindKArchiveDir))
     cd ../
-
-    if ($env:universalBinary -eq 'true') {
-        cd installed_intel/ -ErrorAction Stop
-
-        $env:KF5Archive_DIR_INTEL = Split-Path -Path (Get-Childitem -Include KF5ArchiveConfig.cmake -Recurse -ErrorAction SilentlyContinue)[0]
-
-        cd ../
-    }
-} catch {}
+}
 
 cd ../
