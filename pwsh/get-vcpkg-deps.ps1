@@ -38,7 +38,12 @@ if ($IsWindows) {
 }
 
 function InstallPackages() {
-    & "$env:VCPKG_ROOT/$vcpkgexec" install libjxl openexr zlib libraw libavif[aom] libheif
+    # Prefer dav1d, but it's not supported on 32-bit Windows
+    $libavif = $env:VCPKG_DEFAULT_TRIPLET -eq 'x86-windows' ? 'libavif[aom]' : 'libavif[dav1d]'
+    # Build without x265 (only needed for encoding), but this breaks the Linux build
+    $libheif = $IsLinux ? 'libheif' : 'libheif[core]'
+
+    & "$env:VCPKG_ROOT/$vcpkgexec" install libjxl openexr zlib libraw $libavif $libheif
 }
 
 InstallPackages
