@@ -10,6 +10,9 @@ git checkout master
 
 # Dependencies
 if ($IsWindows) {
+    if ($env:buildArch -eq 'Arm64') {
+        $env:QT_HOST_PATH = [System.IO.Path]::GetFullPath("$env:QT_ROOT_DIR\..\$((Split-Path -Path $env:QT_ROOT_DIR -Leaf) -replace '_arm64', '_64')")
+    }
     & "$env:GITHUB_WORKSPACE/pwsh/vcvars.ps1"
 } elseif ($IsMacOS) {
     if ($qtVersion -ge [version]"6.5.3") {
@@ -35,7 +38,7 @@ $argDeviceArchs = $IsMacOS -and $qtVersion.Major -eq 5 ? "-DCMAKE_OSX_ARCHITECTU
 cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release $argDeviceArchs $argApngQt6
 ninja -C build
 
-if ($env:universalBinary -eq 'true') {
+if ($IsMacOS -and $env:buildArch -eq 'Universal') {
     cmake -B build_intel -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES=x86_64
     ninja -C build_intel
 }
@@ -45,7 +48,7 @@ $outputDir = "output"
 mkdir $outputDir
 $files = Get-ChildItem -Path "build/plugins/imageformats" | Where-Object { $_.Extension -in ".dylib", ".dll", ".so" }
 foreach ($file in $files) {
-    if ($env:universalBinary -eq 'true') {
+    if ($IsMacOS -and $env:buildArch -eq 'Universal') {
         $name = $file.Name
         lipo -create "$file" "build_intel/plugins/imageformats/$name" -output "$outputDir/$name"
         lipo -info "$outputDir/$name"

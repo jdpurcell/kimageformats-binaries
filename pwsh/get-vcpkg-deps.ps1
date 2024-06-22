@@ -24,8 +24,10 @@ if ($IsWindows) {
     sudo apt-get install nasm libxi-dev libgl1-mesa-dev libglu1-mesa-dev mesa-common-dev libxrandr-dev libxxf86vm-dev
 }
 
-if ($IsWindows -and [Environment]::Is64BitOperatingSystem -and $env:forceWin32 -eq 'true') {
+if ($IsWindows -and $env:buildArch -eq 'X86') {
     $env:VCPKG_DEFAULT_TRIPLET = "x86-windows"
+} elseif ($IsWindows -and $env:buildArch -eq 'Arm64') {
+    $env:VCPKG_DEFAULT_TRIPLET = "arm64-windows"
 } elseif ($IsMacOS -and $qtVersion.Major -eq 5) {
     $env:VCPKG_DEFAULT_TRIPLET = "x64-osx"
 }
@@ -49,7 +51,7 @@ function InstallPackages() {
 InstallPackages
 
 # Build x64-osx dependencies separately--we'll have to combine stuff later.
-if ($env:universalBinary -eq 'true') {
+if ($IsMacOS -and $env:buildArch -eq 'Universal') {
     $env:VCPKG_DEFAULT_TRIPLET = "x64-osx"
     InstallPackages
 }

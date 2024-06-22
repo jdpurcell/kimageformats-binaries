@@ -7,14 +7,9 @@ git clone https://invent.kde.org/frameworks/extra-cmake-modules.git
 cd extra-cmake-modules
 git checkout $args[0]
 
-# vcvars on windows
-if ($IsWindows) {
-    & "$env:GITHUB_WORKSPACE/pwsh/vcvars.ps1"
-}
-
 # Build
 $argDeviceArchs = `
-    $env:universalBinary -eq 'true' ? "-DCMAKE_OSX_ARCHITECTURES=x86_64;arm64" : `
+    $IsMacOS -and $env:buildArch -eq 'Universal' ? "-DCMAKE_OSX_ARCHITECTURES=x86_64;arm64" : `
     $IsMacOS -and $qtVersion.Major -eq 5 ? "-DCMAKE_OSX_ARCHITECTURES=x86_64" : `
     $null
 cmake -G Ninja . $argDeviceArchs

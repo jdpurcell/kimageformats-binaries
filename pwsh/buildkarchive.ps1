@@ -10,9 +10,7 @@ git clone https://invent.kde.org/frameworks/karchive.git
 cd karchive
 git checkout $kde_vers
 
-if ($IsWindows) {
-    & "$env:GITHUB_WORKSPACE\pwsh\vcvars.ps1"
-} elseif ($IsMacOS) {
+if ($IsMacOS) {
     # Uninstall this because there's only one architecture installed, which
     # prevents the other architecture of the universal binary from building
     brew uninstall --ignore-dependencies zstd
@@ -21,8 +19,10 @@ if ($IsWindows) {
 if ($qtVersion.Major -eq 6) {
     $qt6flag = "-DBUILD_WITH_QT6=ON"
 }
-if ($IsWindows -and [Environment]::Is64BitOperatingSystem -and $env:forceWin32 -eq 'true') {
+if ($IsWindows -and $env:buildArch -eq 'X86') {
     $argTargetTriplet = "-DVCPKG_TARGET_TRIPLET=x86-windows"
+} elseif ($IsWindows -and $env:buildArch -eq 'Arm64') {
+    $argTargetTriplet = "-DVCPKG_TARGET_TRIPLET=arm64-windows"
 } elseif ($IsMacOS -and $qtVersion.Major -eq 5) {
     $argTargetTriplet = "-DVCPKG_TARGET_TRIPLET=x64-osx"
     $argDeviceArchs = "-DCMAKE_OSX_ARCHITECTURES=x86_64"
@@ -35,7 +35,7 @@ ninja
 ninja install
 
 # Build intel version as well and macos and lipo them together
-if ($env:universalBinary -eq 'true') {
+if ($IsMacOS -and $env:buildArch -eq 'Universal') {
     Write-Host "Building intel binaries"
 
     rm -rf CMakeFiles/
@@ -55,7 +55,7 @@ cd installed/ -ErrorAction Stop
 [Environment]::SetEnvironmentVariable("KF$($kfMajorVer)Archive_DIR", (FindKArchiveDir))
 cd ../
 
-if ($env:universalBinary -eq 'true') {
+if ($IsMacOS -and $env:buildArch -eq 'Universal') {
     cd installed_intel/ -ErrorAction Stop
     [Environment]::SetEnvironmentVariable("KF$($kfMajorVer)Archive_DIR_INTEL", (FindKArchiveDir))
     cd ../

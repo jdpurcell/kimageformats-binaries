@@ -19,6 +19,9 @@ if (-Not $IsWindows) {
 
 # Dependencies
 if ($IsWindows) {
+    if ($env:buildArch -eq 'Arm64') {
+        $env:QT_HOST_PATH = [System.IO.Path]::GetFullPath("$env:QT_ROOT_DIR\..\$((Split-Path -Path $env:QT_ROOT_DIR -Leaf) -replace '_arm64', '_64')")
+    }
     & "$env:GITHUB_WORKSPACE/pwsh/vcvars.ps1"
 } elseif ($IsMacOS) {
     if ($qtVersion -ge [version]"6.5.3") {
@@ -45,8 +48,10 @@ if ($IsWindows) {
 if ($qtVersion.Major -eq 6) {
     $qt6flag = "-DBUILD_WITH_QT6=ON"
 }
-if ($IsWindows -and [Environment]::Is64BitOperatingSystem -and $env:forceWin32 -eq 'true') {
+if ($IsWindows -and $env:buildArch -eq 'X86') {
     $argTargetTriplet = "-DVCPKG_TARGET_TRIPLET=x86-windows"
+} elseif ($IsWindows -and $env:buildArch -eq 'Arm64') {
+    $argTargetTriplet = "-DVCPKG_TARGET_TRIPLET=arm64-windows"
 } elseif ($IsMacOS -and $qtVersion.Major -eq 5) {
     $argTargetTriplet = "-DVCPKG_TARGET_TRIPLET=x64-osx"
     $argDeviceArchs = "-DCMAKE_OSX_ARCHITECTURES=x86_64"
@@ -70,7 +75,7 @@ $prefix_out = "output"
 mkdir -p $prefix_out
 
 # Build intel version as well and macos and lipo them together
-if ($env:universalBinary -eq 'true') {
+if ($IsMacOS -and $env:buildArch -eq 'Universal') {
     Write-Host "Building intel binaries"
 
     rm -rf CMakeFiles/
@@ -111,7 +116,10 @@ if ($env:universalBinary -eq 'true') {
     if ($IsWindows) {
         cp karchive/bin/*.dll $prefix_out
         # Also copy all the vcpkg DLLs on windows, since it's apparently not static by default
-        $triplet = [Environment]::Is64BitOperatingSystem -and $env:forceWin32 -ne 'true' ? "x64-windows" : "x86-windows"
+        $triplet =
+            $env:buildArch -eq 'X86' ? 'x86-windows' :
+            $env:buildArch -eq 'Arm64' ? 'arm64-windows' :
+            'x64-windows'
         cp "$env:VCPKG_ROOT/installed/$triplet/bin/*.dll" $prefix_out
     } elseif ($IsMacOS) {
         cp karchive/bin/*.dylib $prefix_out
@@ -126,7 +134,7 @@ if ($env:universalBinary -eq 'true') {
 if ($IsMacOS) {
     $karchLibName = "libKF$($kfMajorVer)Archive.$($kfMajorVer)"
     $libDirName = $kfMajorVer -ge 6 ? 'lib' : '' # empty name results in double slash in path which is intentional
-    foreach ($installDirName in @('installed') + ($env:universalBinary -eq 'true' ? @('installed_intel') : @())) {
+    foreach ($installDirName in @('installed') + ($IsMacOS -and $env:buildArch -eq 'Universal' ? @('installed_intel') : @())) {
         $oldValue = "$(Get-Location)/karchive/$installDirName/$libDirName/$karchLibName.dylib"
         $newValue = "@rpath/$karchLibName.dylib"
         install_name_tool -id $newValue "$prefix_out/$karchLibName.dylib"
