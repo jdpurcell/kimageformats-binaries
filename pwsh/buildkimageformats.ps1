@@ -8,8 +8,8 @@ $kfMajorVer = $kde_vers -like 'v5.*' ? 5 : 6
 $macKimgLibExt = $kfMajorVer -ge 6 ? '.dylib' : '.so'
 
 # Clone
-git clone https://invent.kde.org/frameworks/kimageformats.git
-cd kimageformats
+git clone https://invent.kde.org/frameworks/kimageformats.git KImageFormats
+cd KImageFormats
 git checkout $kde_vers
 
 # Apply patch to cmake file for vcpkg libraw

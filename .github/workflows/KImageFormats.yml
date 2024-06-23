@@ -61,14 +61,14 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: KImageFormats-${{ runner.os }}-${{ matrix.qtVersion }}-${{ matrix.buildArch }}
-          path: kimageformats/output
+          path: KImageFormats/output
 
       - name: 'Zip Artifact'
         if: github.ref == 'refs/heads/master'
         uses: thedoctor0/zip-release@0.7.1
         with:
           type: 'zip'
-          path: kimageformats/output/
+          path: KImageFormats/output/
           filename: "KImageFormats-${{ runner.os }}-${{ matrix.qtVersion }}-${{ matrix.buildArch }}.zip"
 
       - name: 'Upload to continous release'
