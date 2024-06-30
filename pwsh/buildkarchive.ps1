@@ -16,20 +16,16 @@ if ($IsMacOS) {
     brew uninstall --ignore-dependencies zstd
 }
 
-if ($qtVersion.Major -eq 6) {
-    $qt6flag = "-DBUILD_WITH_QT6=ON"
-}
-if ($IsWindows -and $env:buildArch -eq 'X86') {
-    $argTargetTriplet = "-DVCPKG_TARGET_TRIPLET=x86-windows"
-} elseif ($IsWindows -and $env:buildArch -eq 'Arm64') {
-    $argTargetTriplet = "-DVCPKG_TARGET_TRIPLET=arm64-windows"
-} elseif ($IsMacOS -and $qtVersion.Major -eq 5) {
-    $argTargetTriplet = "-DVCPKG_TARGET_TRIPLET=x64-osx"
-    $argDeviceArchs = "-DCMAKE_OSX_ARCHITECTURES=x86_64"
+$argQt6 = $qtVersion.Major -eq 6 ? '-DBUILD_WITH_QT6=ON' : $null
+if ($IsMacOS) {
+    $argDeviceArchs =
+        $env:buildArch -eq 'X64' ? '-DCMAKE_OSX_ARCHITECTURES=x86_64' :
+        $env:buildArch -in 'Arm64', 'Universal' ? '-DCMAKE_OSX_ARCHITECTURES=arm64' :
+        $null
 }
 
 # Build
-cmake -G Ninja -DCMAKE_INSTALL_PREFIX="$PWD/installed/" -DCMAKE_BUILD_TYPE=Release $qt6flag -DWITH_BZIP2=OFF -DWITH_LIBLZMA=OFF -DWITH_LIBZSTD=OFF -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" $argTargetTriplet $argDeviceArchs .
+cmake -G Ninja -DCMAKE_INSTALL_PREFIX="$PWD/installed/" -DCMAKE_BUILD_TYPE=Release $argQt6 -DWITH_BZIP2=OFF -DWITH_LIBLZMA=OFF -DWITH_LIBZSTD=OFF -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" $argDeviceArchs .
 
 ninja
 ninja install
@@ -41,7 +37,7 @@ if ($IsMacOS -and $env:buildArch -eq 'Universal') {
     rm -rf CMakeFiles/
     rm -rf CMakeCache.txt
 
-    cmake -G Ninja -DCMAKE_INSTALL_PREFIX="$PWD/installed_intel/" -DCMAKE_BUILD_TYPE=Release $qt6flag -DWITH_BZIP2=OFF -DWITH_LIBLZMA=OFF -DWITH_LIBZSTD=OFF -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET="x64-osx" -DCMAKE_OSX_ARCHITECTURES="x86_64" .
+    cmake -G Ninja -DCMAKE_INSTALL_PREFIX="$PWD/installed_intel/" -DCMAKE_BUILD_TYPE=Release $argQt6 -DWITH_BZIP2=OFF -DWITH_LIBLZMA=OFF -DWITH_LIBZSTD=OFF -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET="x64-osx" -DCMAKE_OSX_ARCHITECTURES="x86_64" .
 
     ninja
     ninja install

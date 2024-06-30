@@ -34,7 +34,12 @@ if ($IsWindows) {
 
 # Build
 $argApngQt6 = $qtVersion -lt [version]"6.0" ? "-DAPNG_QT6=OFF" : $null
-$argDeviceArchs = $IsMacOS -and $qtVersion.Major -eq 5 ? "-DCMAKE_OSX_ARCHITECTURES=x86_64" : $null
+if ($IsMacOS) {
+    $argDeviceArchs =
+        $env:buildArch -eq 'X64' ? '-DCMAKE_OSX_ARCHITECTURES=x86_64' :
+        $env:buildArch -in 'Arm64', 'Universal' ? '-DCMAKE_OSX_ARCHITECTURES=arm64' :
+        $null
+}
 cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release $argDeviceArchs $argApngQt6
 ninja -C build
 

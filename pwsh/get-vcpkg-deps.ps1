@@ -24,12 +24,25 @@ if ($IsWindows) {
     sudo apt-get install nasm libxi-dev libgl1-mesa-dev libglu1-mesa-dev mesa-common-dev libxrandr-dev libxxf86vm-dev
 }
 
-if ($IsWindows -and $env:buildArch -eq 'X86') {
-    $env:VCPKG_DEFAULT_TRIPLET = "x86-windows"
-} elseif ($IsWindows -and $env:buildArch -eq 'Arm64') {
-    $env:VCPKG_DEFAULT_TRIPLET = "arm64-windows"
-} elseif ($IsMacOS -and $qtVersion.Major -eq 5) {
-    $env:VCPKG_DEFAULT_TRIPLET = "x64-osx"
+# Set default triplet
+if ($IsWindows) {
+    $env:VCPKG_DEFAULT_TRIPLET =
+        $env:buildArch -eq 'X64' ? 'x64-windows' :
+        $env:buildArch -eq 'X86' ? 'x86-windows' :
+        $env:buildArch -eq 'Arm64' ? 'arm64-windows' :
+        $null
+} elseif ($IsMacOS) {
+    $env:VCPKG_DEFAULT_TRIPLET =
+        $env:buildArch -eq 'X64' ? 'x64-osx' :
+        $env:buildArch -in 'Arm64', 'Universal' ? 'arm64-osx' :
+        $null
+} elseif ($IsLinux) {
+    $env:VCPKG_DEFAULT_TRIPLET =
+        $env:buildArch -eq 'X64' ? 'x64-linux' :
+        $null
+}
+if (-not $env:VCPKG_DEFAULT_TRIPLET) {
+    throw 'Unsupported build architecture.'
 }
 
 # Get our dependencies using vcpkg!
@@ -53,8 +66,10 @@ InstallPackages
 
 # Build x64-osx dependencies separately--we'll have to combine stuff later.
 if ($IsMacOS -and $env:buildArch -eq 'Universal') {
-    $env:VCPKG_DEFAULT_TRIPLET = "x64-osx"
-    InstallPackages
-}
+    $mainTriplet = $env:VCPKG_DEFAULT_TRIPLET
+    $env:VCPKG_DEFAULT_TRIPLET = 'x64-osx'
 
-$env:VCPKG_DEFAULT_TRIPLET = $null
+    InstallPackages
+
+    $env:VCPKG_DEFAULT_TRIPLET = $mainTriplet
+}

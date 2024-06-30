@@ -45,25 +45,21 @@ if ($IsWindows) {
 & "$env:GITHUB_WORKSPACE/pwsh/buildecm.ps1" $kde_vers
 & "$env:GITHUB_WORKSPACE/pwsh/buildkarchive.ps1" $kde_vers
 
-if ($qtVersion.Major -eq 6) {
-    $qt6flag = "-DBUILD_WITH_QT6=ON"
-}
-if ($IsWindows -and $env:buildArch -eq 'X86') {
-    $argTargetTriplet = "-DVCPKG_TARGET_TRIPLET=x86-windows"
-} elseif ($IsWindows -and $env:buildArch -eq 'Arm64') {
-    $argTargetTriplet = "-DVCPKG_TARGET_TRIPLET=arm64-windows"
-} elseif ($IsMacOS -and $qtVersion.Major -eq 5) {
-    $argTargetTriplet = "-DVCPKG_TARGET_TRIPLET=x64-osx"
-    $argDeviceArchs = "-DCMAKE_OSX_ARCHITECTURES=x86_64"
-}
-
 # Resolve pthread error on linux
 if (-Not $IsWindows) {
     $env:CXXFLAGS += ' -pthread'
 }
 
+$argQt6 = $qtVersion.Major -eq 6 ? '-DBUILD_WITH_QT6=ON' : $null
+if ($IsMacOS) {
+    $argDeviceArchs =
+        $env:buildArch -eq 'X64' ? '-DCMAKE_OSX_ARCHITECTURES=x86_64' :
+        $env:buildArch -in 'Arm64', 'Universal' ? '-DCMAKE_OSX_ARCHITECTURES=arm64' :
+        $null
+}
+
 # Build kimageformats
-cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$PWD/installed" -DKIMAGEFORMATS_JXL=ON -DKIMAGEFORMATS_HEIF=ON $qt6flag -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" $argTargetTriplet $argDeviceArchs .
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$PWD/installed" -DKIMAGEFORMATS_JXL=ON -DKIMAGEFORMATS_HEIF=ON $argQt6 -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" $argDeviceArchs .
 
 ninja
 ninja install
@@ -83,7 +79,7 @@ if ($IsMacOS -and $env:buildArch -eq 'Universal') {
 
     [Environment]::SetEnvironmentVariable("KF$($kfMajorVer)Archive_DIR", [Environment]::GetEnvironmentVariable("KF$($kfMajorVer)Archive_DIR_INTEL"))
 
-    cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$PWD/installed_intel" -DKIMAGEFORMATS_JXL=ON -DKIMAGEFORMATS_HEIF=ON $qt6flag -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET="x64-osx" -DCMAKE_OSX_ARCHITECTURES="x86_64" .
+    cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$PWD/installed_intel" -DKIMAGEFORMATS_JXL=ON -DKIMAGEFORMATS_HEIF=ON $argQt6 -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET="x64-osx" -DCMAKE_OSX_ARCHITECTURES="x86_64" .
 
     ninja
     ninja install
@@ -116,11 +112,7 @@ if ($IsMacOS -and $env:buildArch -eq 'Universal') {
     if ($IsWindows) {
         cp karchive/bin/*.dll $prefix_out
         # Also copy all the vcpkg DLLs on windows, since it's apparently not static by default
-        $triplet =
-            $env:buildArch -eq 'X86' ? 'x86-windows' :
-            $env:buildArch -eq 'Arm64' ? 'arm64-windows' :
-            'x64-windows'
-        cp "$env:VCPKG_ROOT/installed/$triplet/bin/*.dll" $prefix_out
+        cp "$env:VCPKG_ROOT/installed/$env:VCPKG_DEFAULT_TRIPLET/bin/*.dll" $prefix_out
     } elseif ($IsMacOS) {
         cp karchive/bin/*.dylib $prefix_out
     } else {

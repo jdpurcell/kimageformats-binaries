@@ -1,17 +1,18 @@
 #!/usr/bin/env pwsh
 
-$qtVersion = [version]((qmake --version -split '\n')[1] -split ' ')[3]
-
 # Clone
 git clone https://invent.kde.org/frameworks/extra-cmake-modules.git
 cd extra-cmake-modules
 git checkout $args[0]
 
 # Build
-$argDeviceArchs = `
-    $IsMacOS -and $env:buildArch -eq 'Universal' ? "-DCMAKE_OSX_ARCHITECTURES=x86_64;arm64" : `
-    $IsMacOS -and $qtVersion.Major -eq 5 ? "-DCMAKE_OSX_ARCHITECTURES=x86_64" : `
-    $null
+if ($IsMacOS) {
+    $argDeviceArchs =
+        $env:buildArch -eq 'X64' ? '-DCMAKE_OSX_ARCHITECTURES=x86_64' :
+        $env:buildArch -eq 'Arm64' ? '-DCMAKE_OSX_ARCHITECTURES=arm64' :
+        $env:buildArch -eq 'Universal' ? '-DCMAKE_OSX_ARCHITECTURES=x86_64;arm64' :
+        $null
+}
 cmake -G Ninja . $argDeviceArchs
 
 if ($IsWindows) {
