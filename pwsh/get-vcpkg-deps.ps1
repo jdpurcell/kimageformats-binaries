@@ -52,7 +52,29 @@ if ($IsWindows) {
     $vcpkgexec = "vcpkg"
 }
 
+# Create overlay triplet directory
+$env:VCPKG_OVERLAY_TRIPLETS = "$env:GITHUB_WORKSPACE/vcpkg-overlay-triplets"
+New-Item -ItemType Directory -Path $env:VCPKG_OVERLAY_TRIPLETS -Force
+
+function WriteOverlayTriplet() {
+    $srcPath = "$env:VCPKG_ROOT/triplets/$env:VCPKG_DEFAULT_TRIPLET.cmake"
+    $dstPath = "$env:VCPKG_OVERLAY_TRIPLETS/$env:VCPKG_DEFAULT_TRIPLET.cmake"
+    Copy-Item -Path $srcPath -Destination $dstPath
+
+    function AppendLine($value) {
+        Add-Content -Path $dstPath -Value $value
+    }
+
+    # Ensure trailing newline is present
+    AppendLine ''
+
+    # Skip debug builds
+    AppendLine 'set(VCPKG_BUILD_TYPE release)'
+}
+
 function InstallPackages() {
+    WriteOverlayTriplet
+
     # dav1d for win32 not marked supported due to build issues in the past but seems to be fine now
     $allowUnsupported = $env:VCPKG_DEFAULT_TRIPLET -eq 'x86-windows' ? '--allow-unsupported' : $null
 
