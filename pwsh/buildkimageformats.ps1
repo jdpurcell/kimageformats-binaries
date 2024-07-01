@@ -23,6 +23,10 @@ if ($IsWindows) {
         $env:QT_HOST_PATH = [System.IO.Path]::GetFullPath("$env:QT_ROOT_DIR\..\$((Split-Path -Path $env:QT_ROOT_DIR -Leaf) -replace '_arm64', '_64')")
     }
     & "$env:GITHUB_WORKSPACE/pwsh/vcvars.ps1"
+
+    # Workaround for https://developercommunity.visualstudio.com/t/10664660
+    $env:CXXFLAGS += " -D_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR"
+    $env:CFLAGS += " -D_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR"
 } elseif ($IsMacOS) {
     if ($qtVersion -ge [version]"6.5.3") {
         # GitHub macOS 13/14 runners use Xcode 15.0.x by default which has a known linker issue causing crashes if the artifact is run on macOS <= 12
