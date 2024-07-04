@@ -118,7 +118,7 @@ if ($IsMacOS -and $env:buildArch -eq 'Universal') {
         # Also copy all the vcpkg DLLs on windows, since it's apparently not static by default
         cp "$env:VCPKG_ROOT/installed/$env:VCPKG_DEFAULT_TRIPLET/bin/*.dll" $prefix_out
     } elseif ($IsMacOS) {
-        cp karchive/bin/*.dylib $prefix_out
+        cp karchive/bin/libKF$($kfMajorVer)Archive.$($kfMajorVer).dylib $prefix_out
     } else {
         $libLoc = Split-Path -Path (Get-Childitem -Include "libKF$($kfMajorVer)Archive.so.$($kfMajorVer)" -Recurse -ErrorAction SilentlyContinue)[0]
         [Environment]::SetEnvironmentVariable("KF$($kfMajorVer)LibLoc", $libLoc)
