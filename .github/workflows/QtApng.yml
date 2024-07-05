@@ -16,17 +16,17 @@ jobs:
             qtVersion: '5.15.2'
             buildArch: 'X64'
           - os: macos-14
-            qtVersion: '6.5.3'
+            qtVersion: '6.7.2'
             buildArch: 'Universal'
           - os: macos-14
             qtVersion: '5.15.2'
             buildArch: 'X64'
           - os: windows-2022
-            qtVersion: '6.5.3'
+            qtVersion: '6.7.2'
             qtArch: 'win64_msvc2019_64'
             buildArch: 'X64'
           - os: windows-2022
-            qtVersion: '6.5.3'
+            qtVersion: '6.7.2'
             qtArch: 'win64_msvc2019_arm64'
             buildArch: 'Arm64'
           - os: windows-2022
