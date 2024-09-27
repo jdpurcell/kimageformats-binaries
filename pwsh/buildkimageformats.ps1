@@ -3,7 +3,7 @@
 $qtVersion = [version]((qmake --version -split '\n')[1] -split ' ')[3]
 Write-Host "Detected Qt Version $qtVersion"
 
-$kde_vers = $qtVersion -ge [version]'6.5.0' ? 'v6.3.0' : 'v5.115.0'
+$kde_vers = $qtVersion -ge [version]'6.5.0' ? 'v6.6.0' : 'v5.116.0'
 $kfMajorVer = $kde_vers -like 'v5.*' ? 5 : 6
 $macKimgLibExt = $kfMajorVer -ge 6 ? '.dylib' : '.so'
 
@@ -14,7 +14,7 @@ git checkout $kde_vers
 
 # Apply patch to cmake file for vcpkg libraw
 if (-Not $IsWindows) {
-    patch CMakeLists.txt ../util/kimageformats-find-libraw-vcpkg.patch 
+    patch CMakeLists.txt "../util/kimageformats$kfMajorVer-find-libraw-vcpkg.patch"
 }
 
 # Dependencies
