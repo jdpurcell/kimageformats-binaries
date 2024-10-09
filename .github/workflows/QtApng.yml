@@ -16,18 +16,18 @@ jobs:
             qtVersion: '5.15.2'
             buildArch: 'X64'
           - os: macos-14
-            qtVersion: '6.7.3'
+            qtVersion: '6.8.0'
             buildArch: 'Universal'
           - os: macos-14
             qtVersion: '5.15.2'
             buildArch: 'X64'
           - os: windows-2022
-            qtVersion: '6.7.3'
-            qtArch: 'win64_msvc2019_64'
+            qtVersion: '6.8.0'
+            qtArch: 'win64_msvc2022_64'
             buildArch: 'X64'
           - os: windows-2022
-            qtVersion: '6.7.3'
-            qtArch: 'win64_msvc2019_arm64'
+            qtVersion: '6.8.0'
+            qtArch: 'win64_msvc2022_arm64_cross_compiled'
             buildArch: 'Arm64'
           - os: windows-2022
             qtVersion: '5.15.2'
@@ -41,6 +41,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
+          aqtsource: 'git+https://github.com/jdpurcell/aqtinstall.git@v3.1.92' # temporary fork to fix win64_msvc2022_arm64_cross_compiled
           cache: true
           version: ${{ matrix.qtVersion }}
           arch: ${{ matrix.qtArch }}
