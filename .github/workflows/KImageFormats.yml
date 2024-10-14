@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [master]
 
+env:
+  VCPKG_BINARY_SOURCES: 'clear;default,readwrite'
+
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -51,7 +54,7 @@ jobs:
       - name: Setup vcpkg
         uses: lukka/run-vcpkg@v11
         with:
-          vcpkgGitCommitId: '7eb700c9688daed6d8bdcdc571ebe3eedea6a774'
+          vcpkgGitCommitId: '9558037875497b9db8cf38fcd7db68ec661bffe7'
 
       - name: Build KImageFormats (just one big step for now)
         run: pwsh pwsh/buildkimageformats.ps1
