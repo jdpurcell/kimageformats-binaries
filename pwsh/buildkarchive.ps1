@@ -14,6 +14,7 @@ if ($IsWindows) {
 
 # don't use homebrew zlib/zstd 
 if ($IsMacOS) {
+    brew uninstall --ignore-dependencies zlib
     brew uninstall --ignore-dependencies zstd
 }
 
