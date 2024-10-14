@@ -87,7 +87,7 @@ function InstallPackages() {
     # Build without x265 (only needed for encoding), but this breaks the Linux build
     $libheif = $IsLinux ? 'libheif' : 'libheif[core]'
 
-    & "$env:VCPKG_ROOT/$vcpkgexec" install $allowUnsupported libjxl openexr zlib libraw libavif[dav1d] $libheif
+    & "$env:VCPKG_ROOT/$vcpkgexec" install $allowUnsupported libjxl openexr zlib libraw libavif[aom] $libheif
 }
 
 InstallPackages
