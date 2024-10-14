@@ -13,6 +13,7 @@ git checkout $kde_vers
 if ($IsMacOS) {
     # Uninstall this because there's only one architecture installed, which
     # prevents the other architecture of the universal binary from building
+    brew uninstall --ignore-dependencies zlib
     brew uninstall --ignore-dependencies zstd
 }
 
