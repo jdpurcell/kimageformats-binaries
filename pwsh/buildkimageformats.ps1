@@ -3,7 +3,7 @@
 $qtVersion = [version]((qmake --version -split '\n')[1] -split ' ')[3]
 Write-Host "Detected Qt Version $qtVersion"
 
-$kde_vers = 'v5.116.0'
+$kde_vers = 'v5.115.0'
 
 # Clone
 git clone https://invent.kde.org/frameworks/kimageformats.git
