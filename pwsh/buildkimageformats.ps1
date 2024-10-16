@@ -126,7 +126,7 @@ if ($IsMacOS -and $env:buildArch -eq 'Universal') {
 # Fix linking on macOS
 if ($IsMacOS) {
     $karchLibName = "libKF$($kfMajorVer)Archive.$($kfMajorVer)"
-    $libDirName = $kfMajorVer -ge 6 ? 'lib' : '' # empty name results in double slash in path which is intentional
+    $libDirName = $kfMajorVer -le 5 -and $qtVersion.Major -ge 6 ? '' : 'lib' # empty name results in double slash in path which is intentional
     foreach ($installDirName in @('installed') + ($IsMacOS -and $env:buildArch -eq 'Universal' ? @('installed_intel') : @())) {
         $oldValue = "$(Get-Location)/karchive/$installDirName/$libDirName/$karchLibName.dylib"
         $newValue = "@rpath/$karchLibName.dylib"
