@@ -1,10 +1,6 @@
 #!/usr/bin/env pwsh
 
-# Install vcpkg if we don't already have it
-if ($env:VCPKG_ROOT -eq $null) {
-    git clone https://github.com/microsoft/vcpkg
-    $env:VCPKG_ROOT = "$PWD/vcpkg/"
-}
+$kde_vers = $args[0]
 
 # Bootstrap VCPKG again
 if ($IsWindows) {
@@ -78,16 +74,56 @@ function WriteOverlayTriplet() {
     }
 }
 
+# Create vcpkg manifest directory
+$vcpkgManifestDir = "$env:GITHUB_WORKSPACE/vcpkg-manifest"
+New-Item -ItemType Directory -Path $vcpkgManifestDir -Force
+
+function WriteManifest() {
+    $manifest = @{
+        'builtin-baseline' = $env:VCPKG_COMMIT_ID
+        'dependencies' = @()
+        'overrides' = @()
+    }
+
+    function AddDependency($name, $features = $null, $disableDefaultFeatures = $false) {
+        $dependency = @{ 'name' = $name }
+        if ($features) {
+            $dependency['features'] = $features
+        }
+        if ($disableDefaultFeatures) {
+            $dependency['default-features'] = $false
+        }
+        $manifest['dependencies'] += $dependency
+    }
+
+    function AddOverride($name, $version) {
+        $manifest['overrides'] += @{ 'name' = $name; 'version' = $version }
+    }
+
+    AddDependency 'zlib'
+    AddDependency 'libjxl'
+    AddDependency 'openexr'
+    AddDependency 'libraw'
+    AddDependency 'libavif' @('dav1d')
+    if ($IsLinux) {
+        # x265 is only needed for encoding so we normally skip it, but this breaks the Linux build
+        AddDependency 'libheif'
+    } else {
+        AddDependency 'libheif' $null true
+    }
+
+    $manifest | ConvertTo-Json -Depth 5 | Out-File -FilePath "$vcpkgManifestDir/vcpkg.json"
+}
+
 function InstallPackages() {
     WriteOverlayTriplet
+
+    WriteManifest
 
     # dav1d for win32 not marked supported due to build issues in the past but seems to be fine now
     $allowUnsupported = $env:VCPKG_DEFAULT_TRIPLET -eq 'x86-windows' ? '--allow-unsupported' : $null
 
-    # Build without x265 (only needed for encoding), but this breaks the Linux build
-    $libheif = $IsLinux ? 'libheif' : 'libheif[core]'
-
-    & "$env:VCPKG_ROOT/$vcpkgexec" install $allowUnsupported libjxl openexr zlib libraw libavif[dav1d] $libheif
+    & "$env:VCPKG_ROOT/$vcpkgexec" install --x-manifest-root="$vcpkgManifestDir" --x-install-root="$env:VCPKG_ROOT/installed-$env:VCPKG_DEFAULT_TRIPLET" $allowUnsupported
 }
 
 InstallPackages

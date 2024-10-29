@@ -42,7 +42,7 @@ if ($IsWindows) {
     sudo apt-get install ninja-build
 }
 
-& "$env:GITHUB_WORKSPACE/pwsh/get-vcpkg-deps.ps1"
+& "$env:GITHUB_WORKSPACE/pwsh/get-vcpkg-deps.ps1" $kde_vers
 & "$env:GITHUB_WORKSPACE/pwsh/buildecm.ps1" $kde_vers
 & "$env:GITHUB_WORKSPACE/pwsh/buildkarchive.ps1" $kde_vers
 
@@ -60,7 +60,7 @@ if ($IsMacOS) {
 }
 
 # Build kimageformats
-cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$PWD/installed" -DKIMAGEFORMATS_JXL=ON -DKIMAGEFORMATS_HEIF=ON $argQt6 -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" $argDeviceArchs .
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$PWD/installed" -DKIMAGEFORMATS_JXL=ON -DKIMAGEFORMATS_HEIF=ON $argQt6 -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_INSTALLED_DIR="$env:VCPKG_ROOT/installed-$env:VCPKG_DEFAULT_TRIPLET" $argDeviceArchs .
 
 ninja
 ninja install
@@ -80,7 +80,7 @@ if ($IsMacOS -and $env:buildArch -eq 'Universal') {
 
     [Environment]::SetEnvironmentVariable("KF$($kfMajorVer)Archive_DIR", [Environment]::GetEnvironmentVariable("KF$($kfMajorVer)Archive_DIR_INTEL"))
 
-    cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$PWD/installed_intel" -DKIMAGEFORMATS_JXL=ON -DKIMAGEFORMATS_HEIF=ON $argQt6 -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET="x64-osx" -DCMAKE_OSX_ARCHITECTURES="x86_64" .
+    cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$PWD/installed_intel" -DKIMAGEFORMATS_JXL=ON -DKIMAGEFORMATS_HEIF=ON $argQt6 -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_INSTALLED_DIR="$env:VCPKG_ROOT/installed-x64-osx" -DVCPKG_TARGET_TRIPLET="x64-osx" -DCMAKE_OSX_ARCHITECTURES="x86_64" .
 
     ninja
     ninja install
@@ -113,7 +113,7 @@ if ($IsMacOS -and $env:buildArch -eq 'Universal') {
     if ($IsWindows) {
         cp karchive/bin/*.dll $prefix_out
         # Also copy all the vcpkg DLLs on windows, since it's apparently not static by default
-        cp "$env:VCPKG_ROOT/installed/$env:VCPKG_DEFAULT_TRIPLET/bin/*.dll" $prefix_out
+        cp "$env:VCPKG_ROOT/installed-$env:VCPKG_DEFAULT_TRIPLET/$env:VCPKG_DEFAULT_TRIPLET/bin/*.dll" $prefix_out
     } elseif ($IsMacOS) {
         cp karchive/bin/libKF$($kfMajorVer)Archive.$($kfMajorVer).dylib $prefix_out
     } else {

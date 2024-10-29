@@ -8,6 +8,7 @@ on:
 
 env:
   VCPKG_BINARY_SOURCES: 'clear;default,readwrite'
+  VCPKG_COMMIT_ID: '7adc2e4d49e8d0efc07a369079faa6bc3dbb90f3'
 
 jobs:
   build:
@@ -53,7 +54,7 @@ jobs:
       - name: Setup vcpkg
         uses: lukka/run-vcpkg@v11
         with:
-          vcpkgGitCommitId: '7adc2e4d49e8d0efc07a369079faa6bc3dbb90f3'
+          vcpkgGitCommitId: ${{ env.VCPKG_COMMIT_ID }}
 
       - name: Build KImageFormats (just one big step for now)
         run: pwsh pwsh/buildkimageformats.ps1
