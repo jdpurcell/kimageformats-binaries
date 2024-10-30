@@ -16,27 +16,27 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-20.04
-            qtVersion: '5.15.2'
-            buildArch: 'X64'
+          # - os: ubuntu-20.04
+          #   qtVersion: '5.15.2'
+          #   buildArch: 'X64'
+          # - os: macos-14
+          #   qtVersion: '6.8.0'
+          #   buildArch: 'Universal'
           - os: macos-14
-            qtVersion: '6.8.0'
-            buildArch: 'Universal'
-          - os: macos-14
             qtVersion: '5.15.2'
             buildArch: 'X64'
-          - os: windows-2022
-            qtVersion: '6.8.0'
-            qtArch: 'win64_msvc2022_64'
-            buildArch: 'X64'
-          - os: windows-2022
-            qtVersion: '6.8.0'
-            qtArch: 'win64_msvc2022_arm64_cross_compiled'
-            buildArch: 'Arm64'
-          - os: windows-2022
-            qtVersion: '5.15.2'
-            qtArch: 'win32_msvc2019'
-            buildArch: 'X86'
+          # - os: windows-2022
+          #   qtVersion: '6.8.0'
+          #   qtArch: 'win64_msvc2022_64'
+          #   buildArch: 'X64'
+          # - os: windows-2022
+          #   qtVersion: '6.8.0'
+          #   qtArch: 'win64_msvc2022_arm64_cross_compiled'
+          #   buildArch: 'Arm64'
+          # - os: windows-2022
+          #   qtVersion: '5.15.2'
+          #   qtArch: 'win32_msvc2019'
+          #   buildArch: 'X86'
 
     steps:
       - name: Checkout
@@ -66,7 +66,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: KImageFormats-${{ runner.os }}-${{ matrix.qtVersion }}-${{ matrix.buildArch }}
-          path: KImageFormats/output
+          path: vcpkg/installed-x64-osx
 
       - name: 'Zip Artifact'
         if: github.ref == 'refs/heads/master'
