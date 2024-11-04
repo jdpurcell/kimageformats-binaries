@@ -16,12 +16,12 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-20.04
-            qtVersion: '5.15.2'
-            buildArch: 'X64'
+          # - os: ubuntu-20.04
+          #   qtVersion: '5.15.2'
+          #   buildArch: 'X64'
           - os: macos-14
             qtVersion: '6.8.0'
-            buildArch: 'Universal'
+            buildArch: 'X64'
           # - os: macos-14
           #   qtVersion: '5.15.2'
           #   buildArch: 'X64'
@@ -66,7 +66,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: KImageFormats-${{ runner.os }}-${{ matrix.qtVersion }}-${{ matrix.buildArch }}
-          path: KImageFormats/output
+          path: vcpkg/installed-x64-osx
 
       - name: 'Zip Artifact'
         if: github.ref == 'refs/heads/master'
