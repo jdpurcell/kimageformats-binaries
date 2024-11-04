@@ -1,13 +1,12 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index a28e6c3..e3be6f3 100644
+index a28e6c3..d5342c3 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -616,6 +616,8 @@ if(BUILD_SHARED_LIBS)
-     if(AVIF_LIB_USE_CXX)
-         set_target_properties(avif PROPERTIES LINKER_LANGUAGE "CXX")
-     endif()
-+else()
+@@ -630,6 +630,7 @@ else()
+     include(merge_static_libs)
+     set_target_properties(avif PROPERTIES AVIF_LOCAL ON)
+     merge_static_libs(avif_static avif)
 +    target_include_directories(avif_static PUBLIC $<BUILD_INTERFACE:${libavif_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>)
- endif()
- 
- # Give access to functions defined in internal.h when BUILD_SHARED_LIBS is ON, to tests for example.
+     # Set the avif target's output to "avif_internal" and set the output name of
+     # the combined static archive target (avif_static)) to avif, so that libavif.a
+     # is the merged archive.
