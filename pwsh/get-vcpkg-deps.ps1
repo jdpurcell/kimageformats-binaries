@@ -74,6 +74,25 @@ function WriteOverlayTriplet() {
     }
 }
 
+# Create overlay ports directory
+$env:VCPKG_OVERLAY_PORTS = "$env:GITHUB_WORKSPACE/vcpkg-overlay-ports"
+New-Item -ItemType Directory -Path $env:VCPKG_OVERLAY_PORTS -Force
+
+function WriteOverlayPorts() {
+    # Remove any existing files
+    Remove-Item -Path "$env:VCPKG_OVERLAY_PORTS/*" -Recurse -Force
+
+    function CopyBuiltinPort($name) {
+        Copy-Item -Path "$env:VCPKG_ROOT/ports/$name" -Destination "$env:VCPKG_OVERLAY_PORTS" -Recurse
+    }
+
+    if (-not $IsWindows) {
+        CopyBuiltinPort 'libavif'
+        Copy-Item -Path "$env:GITHUB_WORKSPACE/util/libavif-static-fix/fix-static-target-include-directories.patch" -Destination "$env:VCPKG_OVERLAY_PORTS/libavif"
+        & patch "$env:VCPKG_OVERLAY_PORTS/libavif/portfile.cmake" "$env:GITHUB_WORKSPACE/util/libavif-static-fix/portfile.patch"
+    }
+}
+
 # Create vcpkg manifest directory
 $vcpkgManifestDir = "$env:GITHUB_WORKSPACE/vcpkg-manifest"
 New-Item -ItemType Directory -Path $vcpkgManifestDir -Force
@@ -114,7 +133,7 @@ function WriteManifest() {
 
     if (-not $IsWindows) {
         # libavif 1.1.1 causes KImageFormats build to fail outside of Windows for some reason
-        AddOverride 'libavif' '1.0.4#2'
+        #AddOverride 'libavif' '1.0.4#2'
     }
     if ($kde_vers -like 'v5.*' -or $kde_vers -like 'v6.[0-7].*') {
         # OpenEXR 3.3 introduced a change that's only compatible with KDE Frameworks 6.8+
@@ -126,6 +145,8 @@ function WriteManifest() {
 
 function InstallPackages() {
     WriteOverlayTriplet
+
+    WriteOverlayPorts
 
     WriteManifest
 

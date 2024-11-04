@@ -1,0 +1,10 @@
+--- a/portfile.cmake
++++ b/portfile.cmake
+@@ -6,6 +6,7 @@
+     HEAD_REF master
+     PATCHES
+         disable-source-utf8.patch
++        fix-static-target-include-directories.patch
+ )
+ 
+ vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
