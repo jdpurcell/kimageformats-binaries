@@ -89,7 +89,7 @@ function WriteOverlayPorts() {
     if (-not $IsWindows) {
         CopyBuiltinPort 'libavif'
         Copy-Item -Path "$env:GITHUB_WORKSPACE/util/libavif-static-fix/fix-static-target-include-directories.patch" -Destination "$env:VCPKG_OVERLAY_PORTS/libavif"
-        & patch "$env:VCPKG_OVERLAY_PORTS/libavif/portfile.cmake" "$env:GITHUB_WORKSPACE/util/libavif-static-fix/portfile.patch"
+        Copy-Item -Path "$env:GITHUB_WORKSPACE/util/libavif-static-fix/portfile.cmake" -Destination "$env:VCPKG_OVERLAY_PORTS/libavif" 
     }
 }
 
