@@ -115,6 +115,11 @@ function WriteManifest() {
         AddDependency 'libheif' $null true
     }
 
+    if ($kde_vers -like 'v5.*' -or $kde_vers -like 'v6.[0-7].*') {
+        # OpenEXR 3.3 introduced a change that's only compatible with KDE Frameworks 6.8+
+        AddOverride 'openexr' '3.2.4'
+    }
+
     $manifest | ConvertTo-Json -Depth 5 | Out-File -FilePath "$vcpkgManifestDir/vcpkg.json"
 }
 
