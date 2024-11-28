@@ -22,7 +22,7 @@ jobs:
           - os: macos-14
             qtVersion: '6.8.0'
             buildArch: 'Universal'
-          - os: macos-14
+          - os: macos-13
             qtVersion: '5.15.2'
             buildArch: 'X64'
           - os: windows-2022
