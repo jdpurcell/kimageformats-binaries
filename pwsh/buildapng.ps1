@@ -19,8 +19,8 @@ if ($IsWindows) {
     $env:CXXFLAGS += " -D_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR"
     $env:CFLAGS += " -D_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR"
 } elseif ($IsMacOS) {
-    if ($qtVersion -lt [version]"6.5.3") {
-        # Keep older Qt versions on Xcode 14 due to concern over QTBUG-117484
+    if ($qtVersion -lt [version]'6.5.3') {
+        # Workaround for QTBUG-117484
         sudo xcode-select --switch /Applications/Xcode_14.3.1.app
     }
 }
@@ -34,7 +34,7 @@ if ($IsWindows) {
 }
 
 # Build
-$argApngQt6 = $qtVersion -lt [version]"6.0" ? "-DAPNG_QT6=OFF" : $null
+$argApngQt6 = $qtVersion -lt [version]'6.0' ? "-DAPNG_QT6=OFF" : $null
 if ($IsMacOS) {
     $argDeviceArchs =
         $env:buildArch -eq 'X64' ? '-DCMAKE_OSX_ARCHITECTURES=x86_64' :
