@@ -15,16 +15,16 @@ jobs:
           # - os: ubuntu-20.04
           #   qtVersion: '5.15.2'
           #   buildArch: 'X64'
-          - os: macos-14
-            qtVersion: '6.8.1'
-            buildArch: 'Arm64'
+          # - os: macos-14
+          #   qtVersion: '6.8.1'
+          #   buildArch: 'Arm64'
           # - os: macos-13
           #   qtVersion: '5.15.2'
           #   buildArch: 'X64'
-          # - os: windows-2022
-          #   qtVersion: '6.8.0'
-          #   qtArch: 'win64_msvc2022_64'
-          #   buildArch: 'X64'
+          - os: windows-2022
+            qtVersion: '6.8.1'
+            qtArch: 'win64_msvc2022_64'
+            buildArch: 'X64'
           # - os: windows-2022
           #   qtVersion: '6.8.0'
           #   qtArch: 'win64_msvc2022_arm64_cross_compiled'
@@ -40,11 +40,10 @@ jobs:
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
-        continue-on-error: true
         env:
           AQT_CONFIG: 'util/aqt-settings.ini'
         with:
-          aqtsource: 'git+https://github.com/jdpurcell/aqtinstall.git@qt681_macos'
+          aqtsource: 'git+https://github.com/jdpurcell/aqtinstall.git@qt681_win64'
           extra: '--autodesktop'
           cache: true
           version: ${{ matrix.qtVersion }}
@@ -56,14 +55,14 @@ jobs:
           buildArch: ${{ matrix.buildArch }}
 
       - name: 'Upload Artifact'
-        if: github.ref != 'refs/heads/master'
+        if: github.ref == 'refs/heads/master'
         uses: actions/upload-artifact@v4
         with:
           name: QtApng-${{ runner.os }}-${{ matrix.qtVersion }}-${{ matrix.buildArch }}
           path: QtApng/output
 
       - name: 'Zip Artifact'
-        if: github.ref == 'refs/heads/master'
+        if: github.ref != 'refs/heads/master'
         uses: thedoctor0/zip-release@0.7.1
         with:
           type: 'zip'
@@ -71,7 +70,7 @@ jobs:
           filename: "QtApng-${{ runner.os }}-${{ matrix.qtVersion }}-${{ matrix.buildArch }}.zip"
 
       - name: 'Upload to continous release'
-        if: github.ref == 'refs/heads/master'
+        if: github.ref != 'refs/heads/master'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: 'cont'
