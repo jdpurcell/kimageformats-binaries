@@ -44,22 +44,23 @@ jobs:
         env:
           AQT_CONFIG: 'util/aqt-settings.ini'
         with:
-          aqtsource: 'git+https://github.com/jdpurcell/aqtinstall.git@v3.1.92' # temporary fork to fix win64_msvc2022_arm64_cross_compiled
+          aqtsource: 'git+https://github.com/jdpurcell/aqtinstall.git@qt681_macos'
+          extra: '--autodesktop'
           cache: true
           version: ${{ matrix.qtVersion }}
           arch: ${{ matrix.qtArch }}
 
-      # - name: Build QtApng
-      #   run: pwsh pwsh/buildapng.ps1
-      #   env:
-      #     buildArch: ${{ matrix.buildArch }}
+      - name: Build QtApng
+        run: pwsh pwsh/buildapng.ps1
+        env:
+          buildArch: ${{ matrix.buildArch }}
 
       - name: 'Upload Artifact'
         if: github.ref != 'refs/heads/master'
         uses: actions/upload-artifact@v4
         with:
           name: QtApng-${{ runner.os }}-${{ matrix.qtVersion }}-${{ matrix.buildArch }}
-          path: /Users/runner/work/kimageformats-binaries/Qt/
+          path: QtApng/output
 
       - name: 'Zip Artifact'
         if: github.ref == 'refs/heads/master'
