@@ -13,7 +13,7 @@ git checkout $kde_vers
 if ($IsMacOS) {
     # Uninstall this because there's only one architecture installed, which
     # prevents the other architecture of the universal binary from building
-    #brew uninstall --ignore-dependencies zstd
+    brew uninstall --ignore-dependencies zstd
 }
 
 $argQt6 = $qtVersion.Major -eq 6 ? '-DBUILD_WITH_QT6=ON' : $null
