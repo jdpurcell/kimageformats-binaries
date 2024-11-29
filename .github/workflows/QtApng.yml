@@ -40,6 +40,7 @@ jobs:
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
+        continue-on-error: true
         env:
           AQT_CONFIG: 'util/aqt-settings.ini'
         with:
@@ -48,20 +49,20 @@ jobs:
           version: ${{ matrix.qtVersion }}
           arch: ${{ matrix.qtArch }}
 
-      - name: Build QtApng
-        run: pwsh pwsh/buildapng.ps1
-        env:
-          buildArch: ${{ matrix.buildArch }}
+      # - name: Build QtApng
+      #   run: pwsh pwsh/buildapng.ps1
+      #   env:
+      #     buildArch: ${{ matrix.buildArch }}
 
       - name: 'Upload Artifact'
-        if: github.ref == 'refs/heads/master'
+        if: github.ref != 'refs/heads/master'
         uses: actions/upload-artifact@v4
         with:
           name: QtApng-${{ runner.os }}-${{ matrix.qtVersion }}-${{ matrix.buildArch }}
-          path: QtApng/output
+          path: Qt
 
       - name: 'Zip Artifact'
-        if: github.ref != 'refs/heads/master'
+        if: github.ref == 'refs/heads/master'
         uses: thedoctor0/zip-release@0.7.1
         with:
           type: 'zip'
@@ -69,7 +70,7 @@ jobs:
           filename: "QtApng-${{ runner.os }}-${{ matrix.qtVersion }}-${{ matrix.buildArch }}.zip"
 
       - name: 'Upload to continous release'
-        if: github.ref != 'refs/heads/master'
+        if: github.ref == 'refs/heads/master'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: 'cont'
