@@ -74,6 +74,21 @@ function WriteOverlayTriplet() {
     }
 }
 
+# Create overlay ports directory
+$env:VCPKG_OVERLAY_PORTS = "$env:GITHUB_WORKSPACE/vcpkg-overlay-ports"
+New-Item -ItemType Directory -Path $env:VCPKG_OVERLAY_PORTS -Force
+
+function WriteOverlayPorts() {
+    # Remove any existing files
+    Remove-Item -Path "$env:VCPKG_OVERLAY_PORTS/*" -Recurse -Force
+
+    function CopyBuiltinPort($name) {
+        Copy-Item -Path "$env:VCPKG_ROOT/ports/$name" -Destination "$env:VCPKG_OVERLAY_PORTS" -Recurse
+    }
+
+    # Copy / modify ports here as needed
+}
+
 # Create vcpkg manifest directory
 $vcpkgManifestDir = "$env:GITHUB_WORKSPACE/vcpkg-manifest"
 New-Item -ItemType Directory -Path $vcpkgManifestDir -Force
@@ -117,6 +132,8 @@ function WriteManifest() {
 
 function InstallPackages() {
     WriteOverlayTriplet
+
+    WriteOverlayPorts
 
     WriteManifest
 
