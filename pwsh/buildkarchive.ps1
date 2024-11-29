@@ -11,8 +11,7 @@ cd karchive
 git checkout $kde_vers
 
 if ($IsMacOS) {
-    # Uninstall this because there's only one architecture installed, which
-    # prevents the other architecture of the universal binary from building
+    # We don't need the zstd feature and it will crash at runtime if this one is used anyway
     brew uninstall --ignore-dependencies zstd
 }
 
