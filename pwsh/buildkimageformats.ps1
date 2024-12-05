@@ -3,14 +3,14 @@
 $qtVersion = [version]((qmake --version -split '\n')[1] -split ' ')[3]
 Write-Host "Detected Qt Version $qtVersion"
 
-$kde_vers = $qtVersion -ge [version]'6.5.0' ? 'v6.8.0' : 'v5.116.0'
+$kde_vers = $qtVersion -ge [version]'6.5.0' ? 'v6.9.0' : 'v5.116.0'
 $kfMajorVer = $kde_vers -like 'v5.*' ? 5 : 6
 $macKimgLibExt = $kfMajorVer -ge 6 ? '.dylib' : '.so'
 
 # Clone
 git clone https://invent.kde.org/frameworks/kimageformats.git KImageFormats
 cd KImageFormats
-git checkout $kde_vers
+git checkout master
 
 # Apply patch to cmake file for vcpkg libraw
 if (-Not $IsWindows) {

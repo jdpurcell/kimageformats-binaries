@@ -3,7 +3,7 @@
 # Clone
 git clone https://invent.kde.org/frameworks/extra-cmake-modules.git
 cd extra-cmake-modules
-git checkout $args[0]
+git checkout master
 
 # Build
 $argQt6 = $qtVersion.Major -eq 6 ? '-DBUILD_WITH_QT6=ON' : $null

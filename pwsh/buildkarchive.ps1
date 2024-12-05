@@ -8,7 +8,7 @@ $kfMajorVer = $kde_vers -like 'v5.*' ? 5 : 6
 # Clone
 git clone https://invent.kde.org/frameworks/karchive.git
 cd karchive
-git checkout $kde_vers
+git checkout master
 
 if ($IsMacOS) {
     # We don't need the zstd feature and it will crash at runtime if this one is used anyway
