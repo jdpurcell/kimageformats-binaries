@@ -7,6 +7,7 @@ git checkout $args[0]
 
 # Build
 $argQt6 = $qtVersion.Major -eq 6 ? '-DBUILD_WITH_QT6=ON' : $null
+Write-Host "Debug: $qtVersion / $argQt6"
 if ($IsMacOS) {
     $argDeviceArchs =
         $env:buildArch -eq 'X64' ? '-DCMAKE_OSX_ARCHITECTURES=x86_64' :

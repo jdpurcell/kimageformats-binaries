@@ -42,9 +42,11 @@ if ($IsWindows) {
     sudo apt-get install ninja-build
 }
 
-& "$env:GITHUB_WORKSPACE/pwsh/get-vcpkg-deps.ps1" $kde_vers
+#& "$env:GITHUB_WORKSPACE/pwsh/get-vcpkg-deps.ps1" $kde_vers
 & "$env:GITHUB_WORKSPACE/pwsh/buildecm.ps1" $kde_vers
 & "$env:GITHUB_WORKSPACE/pwsh/buildkarchive.ps1" $kde_vers
+
+return
 
 # Resolve pthread error on linux
 if (-Not $IsWindows) {
