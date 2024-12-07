@@ -2,12 +2,12 @@
 
 $qtVersion = [version]((qmake --version -split '\n')[1] -split ' ')[3]
 
-$kde_vers = $args[0]
+$kfGitRef = $args[0]
 
 # Clone
 git clone https://invent.kde.org/frameworks/extra-cmake-modules.git
 cd extra-cmake-modules
-git checkout $kde_vers
+git checkout $kfGitRef
 
 # Build
 $argQt6 = $qtVersion.Major -eq 6 ? '-DBUILD_WITH_QT6=ON' : $null

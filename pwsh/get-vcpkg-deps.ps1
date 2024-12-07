@@ -1,6 +1,6 @@
 #!/usr/bin/env pwsh
 
-$kde_vers = $args[0]
+$kfGitRef = $args[0]
 
 # Bootstrap VCPKG again
 if ($IsWindows) {
@@ -132,7 +132,7 @@ function WriteManifest() {
         AddDependency 'libheif' $null true
     }
 
-    if ($kde_vers -like 'v5.*' -or $kde_vers -like 'v6.[0-7].*') {
+    if ($kfGitRef -like 'v5.*' -or $kfGitRef -like 'v6.[0-7].*') {
         # OpenEXR 3.3 introduced a change that's only compatible with KDE Frameworks 6.8+
         AddOverride 'openexr' '3.2.4'
     }

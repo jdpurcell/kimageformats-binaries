@@ -65,7 +65,7 @@ jobs:
           path: QtApng/output/
           filename: "QtApng-${{ runner.os }}-${{ matrix.qtVersion }}-${{ matrix.buildArch }}.zip"
 
-      - name: 'Upload to continous release'
+      - name: 'Upload to continuous release'
         if: github.ref == 'refs/heads/master'
         uses: softprops/action-gh-release@v2
         with:

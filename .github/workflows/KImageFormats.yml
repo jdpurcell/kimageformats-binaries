@@ -8,7 +8,7 @@ on:
 
 env:
   VCPKG_BINARY_SOURCES: 'clear;default,readwrite'
-  VCPKG_COMMIT_ID: 'afc0741a720caee97a00fe63a51e9972ebe35a4a'
+  VCPKG_COMMIT_ID: '20a72ce99b12dd0ebfea5d39f32681bd68b19d03'
 
 jobs:
   build:
@@ -49,13 +49,12 @@ jobs:
           version: ${{ matrix.qtVersion }}
           arch: ${{ matrix.qtArch }}
 
-      # Download and build vcpkg, without installing any port. If content is cached already, it is a no-op.
       - name: Setup vcpkg
         uses: lukka/run-vcpkg@v11
         with:
           vcpkgGitCommitId: ${{ env.VCPKG_COMMIT_ID }}
 
-      - name: Build KImageFormats (just one big step for now)
+      - name: Build KImageFormats
         run: pwsh pwsh/buildkimageformats.ps1
         env:
           buildArch: ${{ matrix.buildArch }}
@@ -75,7 +74,7 @@ jobs:
           path: KImageFormats/output/
           filename: "KImageFormats-${{ runner.os }}-${{ matrix.qtVersion }}-${{ matrix.buildArch }}.zip"
 
-      - name: 'Upload to continous release'
+      - name: 'Upload to continuous release'
         if: github.ref == 'refs/heads/master'
         uses: softprops/action-gh-release@v2
         with:

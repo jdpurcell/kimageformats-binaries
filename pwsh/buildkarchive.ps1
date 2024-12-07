@@ -2,13 +2,13 @@
 
 $qtVersion = [version]((qmake --version -split '\n')[1] -split ' ')[3]
 
-$kde_vers = $args[0]
-$kfMajorVer = $kde_vers -like 'v5.*' ? 5 : 6
+$kfGitRef = $args[0]
+$kfMajorVer = $kfGitRef -like 'v5.*' ? 5 : 6
 
 # Clone
 git clone https://invent.kde.org/frameworks/karchive.git
 cd karchive
-git checkout $kde_vers
+git checkout $kfGitRef
 
 if ($IsMacOS) {
     # We don't need the zstd feature and it will crash at runtime if this one is used anyway
