@@ -1,9 +1,12 @@
 #!/usr/bin/env pwsh
 
-$qtVersion = [version]((qmake --version -split '\n')[1] -split ' ')[3]
-Write-Host "Detected Qt Version $qtVersion"
+$qtVersion = [version](qmake -query QT_VERSION)
+Write-Host "Detected Qt version $qtVersion"
 
-$kfGitRef = $qtVersion -ge [version]'6.5.0' ? 'v6.9.0-rc1' : 'v5.116.0'
+$kfGitRef =
+    $qtVersion -ge [version]'6.6.0' ? 'v6.9.0' :
+    $qtVersion -ge [version]'6.5.0' ? 'v6.8.0' :
+    'v5.116.0'
 $kfMajorVer = $kfGitRef -like 'v5.*' ? 5 : 6
 $macKimgLibExt = $kfMajorVer -ge 6 ? '.dylib' : '.so'
 
@@ -19,9 +22,6 @@ if (-Not $IsWindows) {
 
 # Dependencies
 if ($IsWindows) {
-    if ($env:buildArch -eq 'Arm64') {
-        $env:QT_HOST_PATH = [System.IO.Path]::GetFullPath("$env:QT_ROOT_DIR\..\$((Split-Path -Path $env:QT_ROOT_DIR -Leaf) -replace '_arm64', '_64')")
-    }
     & "$env:GITHUB_WORKSPACE/pwsh/vcvars.ps1"
 
     # Workaround for https://developercommunity.visualstudio.com/t/10664660
@@ -78,7 +78,7 @@ if ($IsMacOS -and $env:buildArch -eq 'Universal') {
     rm -rf CMakeFiles/
     rm -rf CMakeCache.txt
 
-    [Environment]::SetEnvironmentVariable("KF$($kfMajorVer)Archive_DIR", [Environment]::GetEnvironmentVariable("KF$($kfMajorVer)Archive_DIR_INTEL"))
+    [Environment]::SetEnvironmentVariable("KF${kfMajorVer}Archive_DIR", [Environment]::GetEnvironmentVariable("KF${kfMajorVer}Archive_DIR_INTEL"))
 
     cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$PWD/installed_intel" -DKIMAGEFORMATS_JXL=ON -DKIMAGEFORMATS_HEIF=ON $argQt6 -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_INSTALLED_DIR="$env:VCPKG_ROOT/installed-x64-osx" -DVCPKG_TARGET_TRIPLET="x64-osx" -DCMAKE_OSX_ARCHITECTURES="x86_64" .
 
@@ -99,7 +99,7 @@ if ($IsMacOS -and $env:buildArch -eq 'Universal') {
     }
 
     # Combine karchive binaries too and send them to output
-    $name = "libKF$($kfMajorVer)Archive.$($kfMajorVer).dylib"
+    $name = "libKF${kfMajorVer}Archive.$kfMajorVer.dylib"
     lipo -create "karchive/installed/lib/$name" "karchive/installed_intel/lib/$name" -output "$prefix_out/$name"
     lipo -info "$prefix_out/$name"
 } else {
@@ -115,17 +115,17 @@ if ($IsMacOS -and $env:buildArch -eq 'Universal') {
         # Also copy all the vcpkg DLLs on windows, since it's apparently not static by default
         cp "$env:VCPKG_ROOT/installed-$env:VCPKG_DEFAULT_TRIPLET/$env:VCPKG_DEFAULT_TRIPLET/bin/*.dll" $prefix_out
     } elseif ($IsMacOS) {
-        cp karchive/bin/libKF$($kfMajorVer)Archive.$($kfMajorVer).dylib $prefix_out
+        cp karchive/bin/libKF${kfMajorVer}Archive.$kfMajorVer.dylib $prefix_out
     } else {
-        $libLoc = Split-Path -Path (Get-Childitem -Include "libKF$($kfMajorVer)Archive.so.$($kfMajorVer)" -Recurse -ErrorAction SilentlyContinue)[0]
-        [Environment]::SetEnvironmentVariable("KF$($kfMajorVer)LibLoc", $libLoc)
+        $libLoc = Split-Path -Path (Get-Childitem -Include "libKF${kfMajorVer}Archive.so.$kfMajorVer" -Recurse -ErrorAction SilentlyContinue)[0]
+        [Environment]::SetEnvironmentVariable("KF${kfMajorVer}LibLoc", $libLoc)
         cp $libLoc/* $prefix_out
     }
 }
 
 # Fix linking on macOS
 if ($IsMacOS) {
-    $karchLibName = "libKF$($kfMajorVer)Archive.$($kfMajorVer)"
+    $karchLibName = "libKF${kfMajorVer}Archive.$kfMajorVer"
     $libDirName = $kfMajorVer -le 5 -and $qtVersion.Major -ge 6 ? '' : 'lib' # empty name results in double slash in path which is intentional
     foreach ($installDirName in @('installed') + ($IsMacOS -and $env:buildArch -eq 'Universal' ? @('installed_intel') : @())) {
         $oldValue = "$(Get-Location)/karchive/$installDirName/$libDirName/$karchLibName.dylib"

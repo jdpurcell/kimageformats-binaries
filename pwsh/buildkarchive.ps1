@@ -1,6 +1,6 @@
 #!/usr/bin/env pwsh
 
-$qtVersion = [version]((qmake --version -split '\n')[1] -split ' ')[3]
+$qtVersion = [version](qmake -query QT_VERSION)
 
 $kfGitRef = $args[0]
 $kfMajorVer = $kfGitRef -like 'v5.*' ? 5 : 6
@@ -43,16 +43,16 @@ if ($IsMacOS -and $env:buildArch -eq 'Universal') {
 }
 
 function FindKArchiveDir() {
-    return Split-Path -Path (Get-Childitem -Include "KF$($kfMajorVer)ArchiveConfig.cmake" -Recurse -ErrorAction SilentlyContinue)[0]
+    return Split-Path -Path (Get-Childitem -Include "KF${kfMajorVer}ArchiveConfig.cmake" -Recurse -ErrorAction SilentlyContinue)[0]
 }
 
 cd installed/ -ErrorAction Stop
-[Environment]::SetEnvironmentVariable("KF$($kfMajorVer)Archive_DIR", (FindKArchiveDir))
+[Environment]::SetEnvironmentVariable("KF${kfMajorVer}Archive_DIR", (FindKArchiveDir))
 cd ../
 
 if ($IsMacOS -and $env:buildArch -eq 'Universal') {
     cd installed_intel/ -ErrorAction Stop
-    [Environment]::SetEnvironmentVariable("KF$($kfMajorVer)Archive_DIR_INTEL", (FindKArchiveDir))
+    [Environment]::SetEnvironmentVariable("KF${kfMajorVer}Archive_DIR_INTEL", (FindKArchiveDir))
     cd ../
 }
 

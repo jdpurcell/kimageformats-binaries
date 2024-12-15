@@ -1,7 +1,7 @@
 #!/usr/bin/env pwsh
 
-$qtVersion = [version]((qmake --version -split '\n')[1] -split ' ')[3]
-Write-Host "Detected Qt Version $qtVersion"
+$qtVersion = [version](qmake -query QT_VERSION)
+Write-Host "Detected Qt version $qtVersion"
 
 # Clone
 git clone https://github.com/jdpurcell/QtApng.git
@@ -10,9 +10,6 @@ git checkout master
 
 # Dependencies
 if ($IsWindows) {
-    if ($env:buildArch -eq 'Arm64') {
-        $env:QT_HOST_PATH = [System.IO.Path]::GetFullPath("$env:QT_ROOT_DIR\..\$((Split-Path -Path $env:QT_ROOT_DIR -Leaf) -replace '_arm64', '_64')")
-    }
     & "$env:GITHUB_WORKSPACE/pwsh/vcvars.ps1"
 
     # Workaround for https://developercommunity.visualstudio.com/t/10664660

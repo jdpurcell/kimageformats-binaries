@@ -1,6 +1,6 @@
 #!/usr/bin/env pwsh
 
-$qtVersion = [version]((qmake --version -split '\n')[1] -split ' ')[3]
+$qtVersion = [version](qmake -query QT_VERSION)
 
 $kfGitRef = $args[0]
 
