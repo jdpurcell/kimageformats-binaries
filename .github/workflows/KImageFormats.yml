@@ -16,27 +16,27 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-20.04
-            qtVersion: '5.15.2'
-            buildArch: 'X64'
-          - os: macos-14
+          - os: ubuntu-24.04
             qtVersion: '6.8.1'
-            buildArch: 'Universal'
-          - os: macos-13
-            qtVersion: '5.15.2'
             buildArch: 'X64'
-          - os: windows-2022
-            qtVersion: '6.8.1'
-            qtArch: 'win64_msvc2022_64'
-            buildArch: 'X64'
-          - os: windows-2022
-            qtVersion: '6.8.1'
-            qtArch: 'win64_msvc2022_arm64_cross_compiled'
-            buildArch: 'Arm64'
-          - os: windows-2022
-            qtVersion: '5.15.2'
-            qtArch: 'win32_msvc2019'
-            buildArch: 'X86'
+          # - os: macos-14
+          #   qtVersion: '6.8.1'
+          #   buildArch: 'Universal'
+          # - os: macos-13
+          #   qtVersion: '5.15.2'
+          #   buildArch: 'X64'
+          # - os: windows-2022
+          #   qtVersion: '6.8.1'
+          #   qtArch: 'win64_msvc2022_64'
+          #   buildArch: 'X64'
+          # - os: windows-2022
+          #   qtVersion: '6.8.1'
+          #   qtArch: 'win64_msvc2022_arm64_cross_compiled'
+          #   buildArch: 'Arm64'
+          # - os: windows-2022
+          #   qtVersion: '5.15.2'
+          #   qtArch: 'win32_msvc2019'
+          #   buildArch: 'X86'
 
     steps:
       - name: Checkout
@@ -60,14 +60,14 @@ jobs:
           buildArch: ${{ matrix.buildArch }}
 
       - name: Upload Artifact
-        if: github.ref != 'refs/heads/master'
+        if: github.ref == 'refs/heads/master'
         uses: actions/upload-artifact@v4
         with:
           name: KImageFormats-${{ runner.os }}-${{ matrix.qtVersion }}-${{ matrix.buildArch }}
           path: KImageFormats/output
 
       - name: Zip Artifact
-        if: github.ref == 'refs/heads/master'
+        if: github.ref != 'refs/heads/master'
         uses: thedoctor0/zip-release@0.7.1
         with:
           type: 'zip'
@@ -75,7 +75,7 @@ jobs:
           filename: "KImageFormats-${{ runner.os }}-${{ matrix.qtVersion }}-${{ matrix.buildArch }}.zip"
 
       - name: Upload to continuous release
-        if: github.ref == 'refs/heads/master'
+        if: github.ref != 'refs/heads/master'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: 'cont'
