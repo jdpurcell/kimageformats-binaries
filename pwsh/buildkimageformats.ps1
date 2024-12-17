@@ -117,9 +117,7 @@ if ($IsMacOS -and $env:buildArch -eq 'Universal') {
     } elseif ($IsMacOS) {
         cp karchive/bin/libKF${kfMajorVer}Archive.$kfMajorVer.dylib $prefix_out
     } else {
-        $libLoc = Split-Path -Path (Get-Childitem -Include "libKF${kfMajorVer}Archive.so.$kfMajorVer" -Recurse -ErrorAction SilentlyContinue)[0]
-        Write-Host "Located KArchive: $libLoc"
-        cp "$libLoc/libKF${kfMajorVer}Archive.so.$kfMajorVer" $prefix_out
+        cp karchive/bin/libKF${kfMajorVer}Archive.so.$kfMajorVer $prefix_out
     }
 }
 
