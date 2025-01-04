@@ -13,7 +13,8 @@ $macKimgLibExt = $kfMajorVer -ge 6 ? '.dylib' : '.so'
 # Clone
 git clone https://invent.kde.org/frameworks/kimageformats.git KImageFormats
 cd KImageFormats
-git checkout $kfGitRef
+$testKfGitRef = $kfGitRef -eq 'v6.9.0' ? '43f3fd05f708a8f779ff28daf17e0bf4434508d9' : $kfGitRef
+git checkout $testKfGitRef
 
 # Apply patch to cmake file for vcpkg libraw
 if (-Not $IsWindows) {
