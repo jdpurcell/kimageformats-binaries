@@ -125,12 +125,7 @@ function WriteManifest() {
     AddDependency 'openexr'
     AddDependency 'libraw'
     AddDependency 'libavif' @('dav1d')
-    if ($IsLinux) {
-        # x265 is only needed for encoding so we normally skip it, but this breaks the Linux build
-        AddDependency 'libheif'
-    } else {
-        AddDependency 'libheif' $null true
-    }
+    AddDependency 'libheif' $null true
 
     $manifest | ConvertTo-Json -Depth 5 | Out-File -FilePath "$vcpkgManifestDir/vcpkg.json"
 }

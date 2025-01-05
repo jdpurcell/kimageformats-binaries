@@ -8,7 +8,10 @@ $kfGitRef =
     $qtVersion -ge [version]'6.5.0' ? 'v6.8.0' :
     'v5.116.0'
 $kfMajorVer = $kfGitRef -like 'v5.*' ? 5 : 6
-$macKimgLibExt = $kfMajorVer -ge 6 ? '.dylib' : '.so'
+$kimgLibExt =
+    $IsWindows ? '.dll' :
+    $IsMacOS -and $kfMajorVer -ge 6 ? '.dylib' :
+    '.so'
 
 # Clone
 git clone https://invent.kde.org/frameworks/kimageformats.git KImageFormats
@@ -45,11 +48,6 @@ if ($IsWindows) {
 & "$env:GITHUB_WORKSPACE/pwsh/get-vcpkg-deps.ps1" $kfGitRef
 & "$env:GITHUB_WORKSPACE/pwsh/buildecm.ps1" $kfGitRef
 & "$env:GITHUB_WORKSPACE/pwsh/buildkarchive.ps1" $kfGitRef
-
-# Resolve pthread error on linux
-if (-Not $IsWindows) {
-    $env:CXXFLAGS += ' -pthread'
-}
 
 $argQt6 = $qtVersion.Major -eq 6 ? '-DBUILD_WITH_QT6=ON' : $null
 if ($IsMacOS) {
@@ -91,7 +89,7 @@ if ($IsMacOS -and $env:buildArch -eq 'Universal') {
     $prefix_intel = "installed_intel/lib/plugins/imageformats"
 
     # Combine the two binaries and copy them to the output folder
-    $files = Get-ChildItem "$prefix" -Recurse -Filter "*$macKimgLibExt"
+    $files = Get-ChildItem "$prefix" -Recurse -Filter "*$kimgLibExt"
     foreach ($file in $files) {
         $name = $file.Name
         lipo -create "$file" "$prefix_intel/$name" -output "$prefix_out/$name"
@@ -104,7 +102,7 @@ if ($IsMacOS -and $env:buildArch -eq 'Universal') {
     lipo -info "$prefix_out/$name"
 } else {
     # Copy binaries from installed to output folder
-    $files = dir ./installed/ -recurse | where {$_.extension -in ".dylib",".dll",".so"}
+    $files = Get-ChildItem "installed/lib" -Recurse -Filter "*$kimgLibExt"
     foreach ($file in $files) {
         cp $file $prefix_out
     }
@@ -117,9 +115,7 @@ if ($IsMacOS -and $env:buildArch -eq 'Universal') {
     } elseif ($IsMacOS) {
         cp karchive/bin/libKF${kfMajorVer}Archive.$kfMajorVer.dylib $prefix_out
     } else {
-        $libLoc = Split-Path -Path (Get-Childitem -Include "libKF${kfMajorVer}Archive.so.$kfMajorVer" -Recurse -ErrorAction SilentlyContinue)[0]
-        [Environment]::SetEnvironmentVariable("KF${kfMajorVer}LibLoc", $libLoc)
-        cp $libLoc/* $prefix_out
+        cp karchive/bin/libKF${kfMajorVer}Archive.so.$kfMajorVer $prefix_out
     }
 }
 
@@ -132,8 +128,18 @@ if ($IsMacOS) {
         $newValue = "@rpath/$karchLibName.dylib"
         install_name_tool -id $newValue "$prefix_out/$karchLibName.dylib"
         foreach ($kimgLibName in @('kimg_kra', 'kimg_ora')) {
-            install_name_tool -change $oldValue $newValue "$prefix_out/$kimgLibName$macKimgLibExt"
+            install_name_tool -change $oldValue $newValue "$prefix_out/$kimgLibName$kimgLibExt"
         }
+    }
+}
+
+# Fix linking on Linux
+if ($IsLinux) {
+    patchelf --set-rpath '$ORIGIN' "$prefix_out/libKF${kfMajorVer}Archive.so.$kfMajorVer"
+
+    $files = Get-ChildItem "$prefix_out" -Recurse -Filter "kimg_*$kimgLibExt"
+    foreach ($file in $files) {
+        patchelf --set-rpath '$ORIGIN/../../lib' $file
     }
 }
 
