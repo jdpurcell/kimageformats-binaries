@@ -4,7 +4,7 @@ $qtVersion = [version](qmake -query QT_VERSION)
 Write-Host "Detected Qt version $qtVersion"
 
 $kfGitRef =
-    $qtVersion -ge [version]'6.6.0' ? 'v6.9.0' :
+    $qtVersion -ge [version]'6.6.0' ? 'v6.10.0' :
     $qtVersion -ge [version]'6.5.0' ? 'v6.8.0' :
     'v5.116.0'
 $kfMajorVer = $kfGitRef -like 'v5.*' ? 5 : 6
