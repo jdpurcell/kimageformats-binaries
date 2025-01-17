@@ -40,6 +40,7 @@ if ($IsWindows) {
 } elseif ($IsLinux) {
     $env:VCPKG_DEFAULT_TRIPLET =
         $env:buildArch -eq 'X64' ? 'x64-linux' :
+        $env:buildArch -eq 'Arm64' ? 'arm64-linux' :
         $null
 }
 if (-not $env:VCPKG_DEFAULT_TRIPLET) {
@@ -59,6 +60,9 @@ New-Item -ItemType Directory -Path $env:VCPKG_OVERLAY_TRIPLETS -Force
 
 function WriteOverlayTriplet() {
     $srcPath = "$env:VCPKG_ROOT/triplets/$env:VCPKG_DEFAULT_TRIPLET.cmake"
+    if (-not (Test-Path $srcPath)) {
+        $srcPath = "$env:VCPKG_ROOT/triplets/community/$env:VCPKG_DEFAULT_TRIPLET.cmake"
+    }
     $dstPath = "$env:VCPKG_OVERLAY_TRIPLETS/$env:VCPKG_DEFAULT_TRIPLET.cmake"
     Copy-Item -Path $srcPath -Destination $dstPath
 
