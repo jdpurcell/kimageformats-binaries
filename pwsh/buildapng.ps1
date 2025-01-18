@@ -57,5 +57,10 @@ foreach ($file in $files) {
         lipo -info "$outputDir/$name"
     } else {
         Copy-Item -Path $file -Destination $outputDir
+        
+        # Fix linking on Linux
+        if ($IsLinux) {
+            patchelf --set-rpath '$ORIGIN/../../lib' (Join-Path -Path $outputDir -ChildPath $file.Name)
+        }
     }
 }
