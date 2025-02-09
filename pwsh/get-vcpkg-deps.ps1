@@ -126,6 +126,7 @@ function WriteManifest() {
 
     AddDependency 'zlib'
     AddDependency 'libjxl'
+    AddDependency 'openjpeg'
     AddDependency 'openexr'
     AddDependency 'libraw'
     AddDependency 'libavif' @('dav1d')
