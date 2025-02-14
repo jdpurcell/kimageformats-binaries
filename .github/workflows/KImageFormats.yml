@@ -8,7 +8,7 @@ on:
 
 env:
   VCPKG_BINARY_SOURCES: 'clear;default,readwrite'
-  VCPKG_COMMIT_ID: 'd504de05dcd7b55df34976be1c824324ec6bca2b'
+  VCPKG_COMMIT_ID: 'd5ec528843d29e3a52d745a64b469f810b2cedbf'
 
 jobs:
   build:
