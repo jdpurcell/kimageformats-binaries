@@ -1,10 +1,5 @@
 name: Build QtApng
-on:
-  push:
-    branches: [master]
-  workflow_dispatch:
-  pull_request:
-    branches: [master]
+on: [workflow_dispatch, pull_request]
 
 jobs:
   build:
@@ -51,28 +46,28 @@ jobs:
           setup-python: false
 
       - name: Build QtApng
-        run: pwsh pwsh/buildapng.ps1
         env:
           buildArch: ${{ matrix.buildArch }}
+        shell: pwsh
+        run: pwsh/buildapng.ps1
 
-      - name: Upload Artifact
+      - name: Upload artifact
         if: github.ref != 'refs/heads/master'
         uses: actions/upload-artifact@v4
         with:
-          name: QtApng-${{ runner.os }}-${{ matrix.qtVersion }}-${{ matrix.buildArch }}
           path: QtApng/output
+          name: QtApng-${{ runner.os }}-${{ matrix.qtVersion }}-${{ matrix.buildArch }}
 
-      - name: Zip Artifact
+      - name: Zip artifact
         if: github.ref == 'refs/heads/master'
-        uses: thedoctor0/zip-release@0.7.1
+        uses: thedoctor0/zip-release@0.7.6
         with:
-          type: 'zip'
-          path: QtApng/output/
-          filename: "QtApng-${{ runner.os }}-${{ matrix.qtVersion }}-${{ matrix.buildArch }}.zip"
+          directory: QtApng/output
+          filename: QtApng-${{ runner.os }}-${{ matrix.qtVersion }}-${{ matrix.buildArch }}.zip
 
       - name: Upload to continuous release
         if: github.ref == 'refs/heads/master'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: 'cont'
-          files:  QtApng-*.zip
+          tag_name: cont
+          files: QtApng/output/QtApng-*.zip
