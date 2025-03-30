@@ -124,13 +124,13 @@ function WriteManifest() {
         $manifest['overrides'] += @{ 'name' = $name; 'version' = $version }
     }
 
-    AddDependency 'zlib'
+    # AddDependency 'zlib'
     AddDependency 'libjxl'
-    AddDependency 'openjpeg'
-    AddDependency 'openexr'
-    AddDependency 'libraw'
-    AddDependency 'libavif' @('dav1d')
-    AddDependency 'libheif' $null true
+    # AddDependency 'openjpeg'
+    # AddDependency 'openexr'
+    # AddDependency 'libraw'
+    # AddDependency 'libavif' @('dav1d')
+    # AddDependency 'libheif' $null true
 
     $manifest | ConvertTo-Json -Depth 5 | Out-File -FilePath "$vcpkgManifestDir/vcpkg.json"
 }

@@ -1,5 +1,5 @@
 name: Build KImageFormats
-on: [workflow_dispatch, pull_request]
+on: [workflow_dispatch, pull_request, push]
 
 env:
   VCPKG_BINARY_SOURCES: 'clear;default,readwrite'
@@ -11,30 +11,30 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-22.04
-            qtVersion: '6.8.3'
-            buildArch: 'X64'
-          - os: ubuntu-24.04-arm
-            qtVersion: '6.8.3'
-            buildArch: 'Arm64'
-          - os: macos-14
-            qtVersion: '6.8.3'
-            buildArch: 'Universal'
-          - os: macos-13
-            qtVersion: '5.15.2'
-            buildArch: 'X64'
+        #   - os: ubuntu-22.04
+        #     qtVersion: '6.8.3'
+        #     buildArch: 'X64'
+        #   - os: ubuntu-24.04-arm
+        #     qtVersion: '6.8.3'
+        #     buildArch: 'Arm64'
+        #   - os: macos-14
+        #     qtVersion: '6.8.3'
+        #     buildArch: 'Universal'
+        #   - os: macos-13
+        #     qtVersion: '5.15.2'
+        #     buildArch: 'X64'
           - os: windows-2022
             qtVersion: '6.8.3'
             qtArch: 'win64_msvc2022_64'
             buildArch: 'X64'
-          - os: windows-2022
-            qtVersion: '6.8.3'
-            qtArch: 'win64_msvc2022_arm64_cross_compiled'
-            buildArch: 'Arm64'
-          - os: windows-2022
-            qtVersion: '5.15.2'
-            qtArch: 'win32_msvc2019'
-            buildArch: 'X86'
+          # - os: windows-2022
+          #   qtVersion: '6.8.3'
+          #   qtArch: 'win64_msvc2022_arm64_cross_compiled'
+          #   buildArch: 'Arm64'
+          # - os: windows-2022
+          #   qtVersion: '5.15.2'
+          #   qtArch: 'win32_msvc2019'
+          #   buildArch: 'X86'
 
     steps:
       - name: Checkout
@@ -64,7 +64,7 @@ jobs:
         if: github.ref != 'refs/heads/master'
         uses: actions/upload-artifact@v4
         with:
-          path: KImageFormats/output
+          path: vcpkg/installed-x64-windows/x64-windows
           name: KImageFormats-${{ runner.os }}-${{ matrix.qtVersion }}-${{ matrix.buildArch }}
 
       - name: Zip artifact
