@@ -124,8 +124,9 @@ function WriteManifest() {
         $manifest['overrides'] += @{ 'name' = $name; 'version' = $version }
     }
 
+    AddDependency 'highway'
     # AddDependency 'zlib'
-    AddDependency 'libjxl'
+    # AddDependency 'libjxl'
     # AddDependency 'openjpeg'
     # AddDependency 'openexr'
     # AddDependency 'libraw'

@@ -9,6 +9,7 @@ jobs:
   build:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         include:
         #   - os: ubuntu-22.04
@@ -23,7 +24,15 @@ jobs:
         #   - os: macos-13
         #     qtVersion: '5.15.2'
         #     buildArch: 'X64'
+          - os: windows-2019
+            qtVersion: '6.8.3'
+            qtArch: 'win64_msvc2022_64'
+            buildArch: 'X64'
           - os: windows-2022
+            qtVersion: '6.8.3'
+            qtArch: 'win64_msvc2022_64'
+            buildArch: 'X64'
+          - os: windows-2025
             qtVersion: '6.8.3'
             qtArch: 'win64_msvc2022_64'
             buildArch: 'X64'
@@ -64,8 +73,8 @@ jobs:
         if: github.ref != 'refs/heads/master'
         uses: actions/upload-artifact@v4
         with:
-          path: vcpkg/installed-x64-windows/x64-windows
-          name: KImageFormats-${{ runner.os }}-${{ matrix.qtVersion }}-${{ matrix.buildArch }}
+          path: vcpkg/installed-x64-windows/x64-windows/bin
+          name: KImageFormats-${{ matrix.os }}-${{ matrix.qtVersion }}-${{ matrix.buildArch }}
 
       - name: Zip artifact
         if: github.ref == 'refs/heads/master'
