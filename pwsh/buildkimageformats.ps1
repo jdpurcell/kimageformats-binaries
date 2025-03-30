@@ -157,4 +157,11 @@ if ($IsWindows) {
             Remove-Item -Path $file.FullName
         }
     }
+
+    if ($env:VCPKG_DEFAULT_TRIPLET -eq 'x64-windows') {
+        # Workaround for antivirus false positive with VS 17.13. This DLL was built
+        # with VS 17.12. Try removing after Windows runner updates VS again.
+        Write-Host "Copying hwy.dll from util dir"
+        Copy-Item -Path '../util/hwy.dll' -Destination $prefix_out
+    }
 }
