@@ -37,7 +37,7 @@ if ($IsWindows) {
     $env:VCPKG_DEFAULT_TRIPLET =
         $env:buildArch -eq 'X86' ? 'x86-windows' :
         $env:buildArch -eq 'Arm64' ? 'arm64-windows' :
-        $hostArch -eq [Architecture]::X64 ? 'x64-windows' :
+        $hostArch -eq [Architecture]::X64 ? 'x64-windows-static-md' :
         $null
 } elseif ($IsMacOS) {
     # For universal binaries, build x64 first; arm64 will come later
