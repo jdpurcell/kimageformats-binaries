@@ -58,10 +58,10 @@ if ($IsMacOS) {
 }
 
 # Build kimageformats
-cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$PWD/installed" -DKIMAGEFORMATS_JXL=ON -DKIMAGEFORMATS_HEIF=ON $argQt6 -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_INSTALLED_DIR="$env:VCPKG_ROOT/installed-$env:VCPKG_DEFAULT_TRIPLET" $argDeviceArchs .
+#cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$PWD/installed" -DKIMAGEFORMATS_JXL=ON -DKIMAGEFORMATS_HEIF=ON $argQt6 -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_INSTALLED_DIR="$env:VCPKG_ROOT/installed-$env:VCPKG_DEFAULT_TRIPLET" $argDeviceArchs .
 
-ninja
-ninja install
+#ninja
+#ninja install
 
 # Location of actual plugin files
 $prefix_out = "output"
@@ -102,10 +102,10 @@ if ($IsMacOS -and $env:buildArch -eq 'Universal') {
     lipo -info "$prefix_out/$name"
 } else {
     # Copy binaries from installed to output folder
-    $files = Get-ChildItem "installed/lib" -Recurse -Filter "*$kimgLibExt"
-    foreach ($file in $files) {
-        cp $file $prefix_out
-    }
+    # $files = Get-ChildItem "installed/lib" -Recurse -Filter "*$kimgLibExt"
+    # foreach ($file in $files) {
+    #     cp $file $prefix_out
+    # }
 
     # Copy karchive stuff to output as well
     if ($IsWindows) {
@@ -144,19 +144,19 @@ if ($IsLinux) {
 }
 
 if ($IsWindows) {
-    Write-Host "`nDetecting plugin dependencies..."
-    $kimgDeps = & "$env:GITHUB_WORKSPACE/pwsh/scankimgdeps.ps1" $prefix_out
+    # Write-Host "`nDetecting plugin dependencies..."
+    # $kimgDeps = & "$env:GITHUB_WORKSPACE/pwsh/scankimgdeps.ps1" $prefix_out
 
-    # Remove unnecessary files
-    $files = Get-ChildItem $prefix_out
-    foreach ($file in $files) {
-        $name = $file.Name
-        $found = $name -like 'kimg_*.dll' -or $name -in $kimgDeps
-        if (-not $found) {
-            Write-Host "Deleting $name"
-            Remove-Item -Path $file.FullName
-        }
-    }
+    # # Remove unnecessary files
+    # $files = Get-ChildItem $prefix_out
+    # foreach ($file in $files) {
+    #     $name = $file.Name
+    #     $found = $name -like 'kimg_*.dll' -or $name -in $kimgDeps
+    #     if (-not $found) {
+    #         Write-Host "Deleting $name"
+    #         Remove-Item -Path $file.FullName
+    #     }
+    # }
 
     #if ($env:VCPKG_DEFAULT_TRIPLET -eq 'x64-windows') {
         # Workaround for antivirus false positive with VS 17.13. This DLL was built

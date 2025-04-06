@@ -28,7 +28,7 @@ if ($IsWindows) {
 # Set default triplet
 if ($IsWindows) {
     $env:VCPKG_DEFAULT_TRIPLET =
-        $env:buildArch -eq 'X64' ? 'x64-windows-static-md' :
+        $env:buildArch -eq 'X64' ? 'x64-windows' :
         $env:buildArch -eq 'X86' ? 'x86-windows-static-md' :
         $env:buildArch -eq 'Arm64' ? 'arm64-windows-static-md' :
         $null
@@ -125,12 +125,12 @@ function WriteManifest() {
     }
 
     AddDependency 'zlib'
-    AddDependency 'libjxl'
-    AddDependency 'openjpeg'
-    AddDependency 'openexr'
-    AddDependency 'libraw'
-    AddDependency 'libavif' @('dav1d')
-    AddDependency 'libheif' $null true
+    # AddDependency 'libjxl'
+    # AddDependency 'openjpeg'
+    # AddDependency 'openexr'
+    # AddDependency 'libraw'
+    # AddDependency 'libavif' @('dav1d')
+    # AddDependency 'libheif' $null true
 
     $manifest | ConvertTo-Json -Depth 5 | Out-File -FilePath "$vcpkgManifestDir/vcpkg.json"
 }

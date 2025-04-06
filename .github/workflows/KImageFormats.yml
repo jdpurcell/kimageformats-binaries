@@ -28,14 +28,14 @@ jobs:
             qtVersion: '6.8.3'
             qtArch: 'win64_msvc2022_64'
             buildArch: 'X64'
-          - os: windows-2022
-            qtVersion: '6.8.3'
-            qtArch: 'win64_msvc2022_arm64_cross_compiled'
-            buildArch: 'Arm64'
-          - os: windows-2022
-            qtVersion: '5.15.2'
-            qtArch: 'win32_msvc2019'
-            buildArch: 'X86'
+          # - os: windows-2022
+          #   qtVersion: '6.8.3'
+          #   qtArch: 'win64_msvc2022_arm64_cross_compiled'
+          #   buildArch: 'Arm64'
+          # - os: windows-2022
+          #   qtVersion: '5.15.2'
+          #   qtArch: 'win32_msvc2019'
+          #   buildArch: 'X86'
 
     steps:
       - name: Checkout
