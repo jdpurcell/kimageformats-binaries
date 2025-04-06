@@ -95,7 +95,7 @@ function WriteOverlayTriplet() {
 function InstallPackages() {
     WriteOverlayTriplet
 
-    & "$env:VCPKG_ROOT/$vcpkgexec" install zlib
+    & "$env:VCPKG_ROOT/$vcpkgexec" install libjxl libavif[aom] libheif openexr zlib libraw
 }
 
 # Build for main triplet

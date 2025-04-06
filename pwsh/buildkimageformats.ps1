@@ -51,7 +51,7 @@ if ($IsWindows) {
 
 & "$env:GITHUB_WORKSPACE/pwsh/buildecm.ps1" $kfGitRef
 & "$env:GITHUB_WORKSPACE/pwsh/get-vcpkg-deps.ps1"
-& "$env:GITHUB_WORKSPACE/pwsh/buildkarchive.ps1" $kfGitRef
+# & "$env:GITHUB_WORKSPACE/pwsh/buildkarchive.ps1" $kfGitRef
 
 # Resolve pthread error on linux
 if (-Not $IsWindows) {
@@ -62,10 +62,10 @@ $argQt6 = $qtVersion.Major -eq 6 ? '-DBUILD_WITH_QT6=ON' : $null
 $argDeviceArchs = $IsMacOS -and $env:buildArch -eq 'Universal' ? '-DCMAKE_OSX_ARCHITECTURES=x86_64' : $null
 
 # Build kimageformats
-# cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$PWD/installed" -DKIMAGEFORMATS_JXL=ON -DKIMAGEFORMATS_HEIF=ON $argQt6 -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" $argDeviceArchs .
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$PWD/installed" -DKIMAGEFORMATS_JXL=ON -DKIMAGEFORMATS_HEIF=ON $argQt6 -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" $argDeviceArchs .
 
-# ninja
-# ninja install
+ninja
+ninja install
 
 # Location of actual plugin files
 $prefix_out = "output"
@@ -113,9 +113,9 @@ if ($IsMacOS -and $env:buildArch -eq 'Universal') {
 
     # Copy karchive stuff to output as well
     if ($IsWindows) {
-        cp karchive/bin/*.dll $prefix_out
-        # Also copy all the vcpkg DLLs on windows, since it's apparently not static by default
-        cp "$env:VCPKG_ROOT/installed/$env:VCPKG_DEFAULT_TRIPLET/bin/*.dll" $prefix_out
+        # cp karchive/bin/*.dll $prefix_out
+        # # Also copy all the vcpkg DLLs on windows, since it's apparently not static by default
+        # cp "$env:VCPKG_ROOT/installed/$env:VCPKG_DEFAULT_TRIPLET/bin/*.dll" $prefix_out
     } elseif ($IsMacOS) {
         cp karchive/bin/libKF${kfMajorVer}Archive.$kfMajorVer.dylib $prefix_out
     } else {
@@ -150,17 +150,17 @@ if ($IsLinux) {
 }
 
 if ($IsWindows) {
-    # Write-Host "`nDetecting plugin dependencies..."
-    # $kimgDeps = & "$env:GITHUB_WORKSPACE/pwsh/scankimgdeps.ps1" $prefix_out
+    Write-Host "`nDetecting plugin dependencies..."
+    $kimgDeps = & "$env:GITHUB_WORKSPACE/pwsh/scankimgdeps.ps1" $prefix_out
 
-    # # Remove unnecessary files
-    # $files = Get-ChildItem $prefix_out
-    # foreach ($file in $files) {
-    #     $name = $file.Name
-    #     $found = $name -like 'kimg_*.dll' -or $name -in $kimgDeps
-    #     if (-not $found) {
-    #         Write-Host "Deleting $name"
-    #         Remove-Item -Path $file.FullName
-    #     }
-    # }
+    # Remove unnecessary files
+    $files = Get-ChildItem $prefix_out
+    foreach ($file in $files) {
+        $name = $file.Name
+        $found = $name -like 'kimg_*.dll' -or $name -in $kimgDeps
+        if (-not $found) {
+            Write-Host "Deleting $name"
+            Remove-Item -Path $file.FullName
+        }
+    }
 }
