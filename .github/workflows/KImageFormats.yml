@@ -65,7 +65,7 @@ jobs:
         if: github.ref != 'refs/heads/master'
         uses: actions/upload-artifact@v4
         with:
-          path: KImageFormats/output
+          path: vcpkg/installed-x64-windows-static-md
           name: KImageFormats-${{ runner.os }}-${{ matrix.qtVersion }}-${{ matrix.buildArch }}
 
       - name: Zip artifact

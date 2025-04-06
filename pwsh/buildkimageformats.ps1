@@ -46,8 +46,8 @@ if ($IsWindows) {
 }
 
 & "$env:GITHUB_WORKSPACE/pwsh/get-vcpkg-deps.ps1" $kfGitRef
-& "$env:GITHUB_WORKSPACE/pwsh/buildecm.ps1" $kfGitRef
-& "$env:GITHUB_WORKSPACE/pwsh/buildkarchive.ps1" $kfGitRef
+#& "$env:GITHUB_WORKSPACE/pwsh/buildecm.ps1" $kfGitRef
+#& "$env:GITHUB_WORKSPACE/pwsh/buildkarchive.ps1" $kfGitRef
 
 $argQt6 = $qtVersion.Major -eq 6 ? '-DBUILD_WITH_QT6=ON' : $null
 if ($IsMacOS) {
@@ -109,9 +109,9 @@ if ($IsMacOS -and $env:buildArch -eq 'Universal') {
 
     # Copy karchive stuff to output as well
     if ($IsWindows) {
-        cp karchive/bin/*.dll $prefix_out
+        #cp karchive/bin/*.dll $prefix_out
         # Also copy all the vcpkg DLLs on windows, since it's apparently not static by default
-        cp "$env:VCPKG_ROOT/installed-$env:VCPKG_DEFAULT_TRIPLET/$env:VCPKG_DEFAULT_TRIPLET/bin/*.dll" $prefix_out
+        #cp "$env:VCPKG_ROOT/installed-$env:VCPKG_DEFAULT_TRIPLET/$env:VCPKG_DEFAULT_TRIPLET/bin/*.dll" $prefix_out
     } elseif ($IsMacOS) {
         cp karchive/bin/libKF${kfMajorVer}Archive.$kfMajorVer.dylib $prefix_out
     } else {
