@@ -12,6 +12,8 @@ git checkout master
 if ($IsWindows) {
     & "$env:GITHUB_WORKSPACE/pwsh/vcvars.ps1"
 
+    choco install pkgconfiglite
+
     # Workaround for https://developercommunity.visualstudio.com/t/10664660
     $env:CXXFLAGS += " -D_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR"
     $env:CFLAGS += " -D_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR"
@@ -20,14 +22,6 @@ if ($IsWindows) {
         # Workaround for QTBUG-117484
         sudo xcode-select --switch /Applications/Xcode_14.3.1.app
     }
-}
-if ($IsWindows) {
-    choco install ninja pkgconfiglite
-} elseif ($IsMacOS) {
-    brew update
-    brew install ninja
-} else {
-    sudo apt-get install ninja-build
 }
 
 # Build
