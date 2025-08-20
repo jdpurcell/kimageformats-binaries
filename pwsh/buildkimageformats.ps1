@@ -19,10 +19,21 @@ git clone https://invent.kde.org/frameworks/kimageformats.git KImageFormats
 cd KImageFormats
 git checkout $kfGitRef
 
-# Patch CMakeLists to work with vcpkg's libraw, bypassing KImageFormats' FindLibRaw.cmake
-# module. The patch also specifies the thread-safe version of libraw.
+# Patch CMakeLists to work with vcpkg's libraw, bypassing KImageFormats' FindLibRaw module.
+# The patch also specifies the thread-safe version of libraw.
 patch CMakeLists.txt "../util/kimageformats$kfMajorVer-find-libraw-vcpkg.patch"
 rm "cmake/find-modules/FindLibRaw.cmake"
+
+if ($kfMajorVer -ge 6) {
+    # Patch CMakeLists to work with vcpkg's jxrlib, bypassing KImageFormats' FindLibJXR module.
+    patch CMakeLists.txt "../util/kimageformats$kfMajorVer-find-jxrlib-vcpkg.patch"
+    rm "cmake/find-modules/FindLibJXR.cmake"
+
+    if ($IsLinux) {
+        # On Linux, ECM requests errors to be treated as warnings, which we need to suppress to build successfully
+        patch src/imageformats/CMakeLists.txt "../util/kimageformats$kfMajorVer-no-fatal-warnings-jxrlib-linux.patch"
+    }
+}
 
 # Dependencies
 if ($IsWindows) {
@@ -53,7 +64,7 @@ if ($IsMacOS) {
 }
 
 # Build kimageformats
-cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$PWD/installed" -DKIMAGEFORMATS_JXL=ON -DKIMAGEFORMATS_HEIF=ON $argQt6 -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_INSTALLED_DIR="$env:VCPKG_ROOT/installed-$env:VCPKG_DEFAULT_TRIPLET" $argDeviceArchs .
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$PWD/installed" -DKIMAGEFORMATS_JXL=ON -DKIMAGEFORMATS_HEIF=ON -DKIMAGEFORMATS_JXR=ON $argQt6 -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_INSTALLED_DIR="$env:VCPKG_ROOT/installed-$env:VCPKG_DEFAULT_TRIPLET" $argDeviceArchs .
 
 ninja
 ninja install
@@ -73,7 +84,7 @@ if ($IsMacOS -and $env:buildArch -eq 'Universal') {
 
     [Environment]::SetEnvironmentVariable("KF${kfMajorVer}Archive_DIR", [Environment]::GetEnvironmentVariable("KF${kfMajorVer}Archive_DIR_INTEL"))
 
-    cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$PWD/installed_intel" -DKIMAGEFORMATS_JXL=ON -DKIMAGEFORMATS_HEIF=ON $argQt6 -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_INSTALLED_DIR="$env:VCPKG_ROOT/installed-x64-osx" -DVCPKG_TARGET_TRIPLET="x64-osx" -DCMAKE_OSX_ARCHITECTURES="x86_64" .
+    cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$PWD/installed_intel" -DKIMAGEFORMATS_JXL=ON -DKIMAGEFORMATS_HEIF=ON -DKIMAGEFORMATS_JXR=ON $argQt6 -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_INSTALLED_DIR="$env:VCPKG_ROOT/installed-x64-osx" -DVCPKG_TARGET_TRIPLET="x64-osx" -DCMAKE_OSX_ARCHITECTURES="x86_64" .
 
     ninja
     ninja install

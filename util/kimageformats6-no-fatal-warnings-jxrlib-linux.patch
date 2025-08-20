@@ -1,0 +1,10 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -159,6 +159,7 @@
+     target_include_directories(kimg_jxr PRIVATE ${LIBJXR_INCLUDE_DIRS})
+     target_link_libraries(kimg_jxr PRIVATE ${LIBJXR_LIBRARIES})
+     target_compile_definitions(kimg_jxr PRIVATE INITGUID)
++    target_link_options(kimg_jxr PRIVATE -Wl,--no-fatal-warnings)
+     if (NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
+         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=undef")
+         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=undef")

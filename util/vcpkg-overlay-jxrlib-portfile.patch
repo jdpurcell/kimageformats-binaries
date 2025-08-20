@@ -1,0 +1,15 @@
+--- a/portfile.cmake
++++ b/portfile.cmake
+@@ -2,9 +2,9 @@
+ 
+ vcpkg_from_github(
+     OUT_SOURCE_PATH SOURCE_PATH
+-    REPO 4creators/jxrlib
+-    REF f7521879862b9085318e814c6157490dd9dbbdb4
+-    SHA512 f5617cbe73b6b905cc6bba181e6a3efedd59584f7a8c90e0f34db580cfdad4239a2ab753df4e221f26a5c0db51475b021052e3b9e3ab3673573573b1d57f3fdb
++    REPO mircomir/jxrlib
++    REF b460a74cee7f99277c2fd7836be192806da0d548
++    SHA512 06568a529f8573b89202e763365cbde57b81e60ed6f19f0d162deb2c855fc044188d59bcc17a9e0a83d1709e57cfa364b65a2eb0f4a0f41912a159e0f1a97d08
+     HEAD_REF master
+     PATCHES
+         guiddef.patch

@@ -95,7 +95,9 @@ function WriteOverlayPorts() {
         Copy-Item -Path "$env:VCPKG_ROOT/ports/$name" -Destination "$env:VCPKG_OVERLAY_PORTS" -Recurse
     }
 
-    # Copy / modify ports here as needed
+    # Overlay: jxrlib
+    CopyBuiltinPort 'jxrlib'
+    patch "$env:VCPKG_OVERLAY_PORTS/jxrlib/portfile.cmake" "$env:GITHUB_WORKSPACE/util/vcpkg-overlay-jxrlib-portfile.patch"
 }
 
 # Create vcpkg manifest directory
@@ -131,6 +133,9 @@ function WriteManifest() {
     AddDependency 'libraw'
     AddDependency 'libavif' @('dav1d')
     AddDependency 'libheif' $null true
+    if ($kfGitRef -like 'v6.*') {
+        AddDependency 'jxrlib'
+    }
 
     $manifest | ConvertTo-Json -Depth 5 | Out-File -FilePath "$vcpkgManifestDir/vcpkg.json"
 }

@@ -1,0 +1,14 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -94,7 +94,10 @@
+ # JXR plugin disabled by default due to security issues
+ option(KIMAGEFORMATS_JXR "Enable plugin for JPEG XR format" OFF)
+ if(KIMAGEFORMATS_JXR)
+-    find_package(LibJXR)
++    find_package(JXR)
++    set(LibJXR_FOUND ${JXR_FOUND})
++    set(LIBJXR_INCLUDE_DIRS ${JXR_INCLUDE_DIRS})
++    set(LIBJXR_LIBRARIES ${JXR_LIBRARIES})
+ endif()
+ add_feature_info(LibJXR LibJXR_FOUND "required for the QImage plugin for JPEG XR images")
+ 
