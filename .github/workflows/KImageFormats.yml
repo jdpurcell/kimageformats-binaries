@@ -3,7 +3,7 @@ on: [workflow_dispatch, pull_request]
 
 env:
   VCPKG_BINARY_SOURCES: 'clear;default,readwrite'
-  VCPKG_COMMIT_ID: '782633ce3e7106f940a508f2fedca848c8b91f6a'
+  VCPKG_COMMIT_ID: '6ecbbbdf31cba47aafa7cf6189b1e73e10ac61f8'
 
 jobs:
   build:
@@ -12,23 +12,23 @@ jobs:
       matrix:
         include:
           - os: ubuntu-22.04
-            qtVersion: '6.8.3'
+            qtVersion: '6.9.2'
             buildArch: 'X64'
           - os: ubuntu-24.04-arm
-            qtVersion: '6.8.3'
+            qtVersion: '6.9.2'
             buildArch: 'Arm64'
           - os: macos-14
-            qtVersion: '6.8.3'
+            qtVersion: '6.9.2'
             buildArch: 'Universal'
           - os: macos-13
             qtVersion: '5.15.2'
             buildArch: 'X64'
           - os: windows-2022
-            qtVersion: '6.8.3'
+            qtVersion: '6.9.2'
             qtArch: 'win64_msvc2022_64'
             buildArch: 'X64'
           - os: windows-2022
-            qtVersion: '6.8.3'
+            qtVersion: '6.9.2'
             qtArch: 'win64_msvc2022_arm64_cross_compiled'
             buildArch: 'Arm64'
           - os: windows-2022

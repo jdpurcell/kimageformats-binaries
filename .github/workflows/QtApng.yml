@@ -8,23 +8,23 @@ jobs:
       matrix:
         include:
           - os: ubuntu-22.04
-            qtVersion: '6.8.3'
+            qtVersion: '6.9.2'
             buildArch: 'X64'
           - os: ubuntu-24.04-arm
-            qtVersion: '6.8.3'
+            qtVersion: '6.9.2'
             buildArch: 'Arm64'
           - os: macos-14
-            qtVersion: '6.8.3'
+            qtVersion: '6.9.2'
             buildArch: 'Universal'
           - os: macos-13
             qtVersion: '5.15.2'
             buildArch: 'X64'
           - os: windows-2022
-            qtVersion: '6.8.3'
+            qtVersion: '6.9.2'
             qtArch: 'win64_msvc2022_64'
             buildArch: 'X64'
           - os: windows-2022
-            qtVersion: '6.8.3'
+            qtVersion: '6.9.2'
             qtArch: 'win64_msvc2022_arm64_cross_compiled'
             buildArch: 'Arm64'
           - os: windows-2022
