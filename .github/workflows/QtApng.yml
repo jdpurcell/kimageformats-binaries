@@ -13,7 +13,7 @@ jobs:
           - os: ubuntu-24.04-arm
             qtVersion: '6.9.3'
             buildArch: 'Arm64'
-          - os: macos-14
+          - os: macos-26
             qtVersion: '6.9.3'
             buildArch: 'Universal'
           - os: macos-13
