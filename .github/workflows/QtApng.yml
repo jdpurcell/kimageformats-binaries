@@ -34,7 +34,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Install Qt
         uses: jdpurcell/install-qt-action@v5
@@ -53,7 +53,7 @@ jobs:
 
       - name: Upload artifact
         if: github.ref != 'refs/heads/master'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           path: QtApng/output
           name: QtApng-${{ runner.os }}-${{ matrix.qtVersion }}-${{ matrix.buildArch }}
