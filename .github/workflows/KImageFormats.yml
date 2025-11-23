@@ -20,9 +20,9 @@ jobs:
           - os: macos-26
             qtVersion: '6.9.3'
             buildArch: 'Universal'
-          - os: macos-13
-            qtVersion: '5.15.2'
-            buildArch: 'X64'
+          - os: macos-15
+            qtVersion: '6.7.3'
+            buildArch: 'Universal'
           - os: windows-2022
             qtVersion: '6.9.3'
             qtArch: 'win64_msvc2022_64'
@@ -31,10 +31,6 @@ jobs:
             qtVersion: '6.9.3'
             qtArch: 'win64_msvc2022_arm64_cross_compiled'
             buildArch: 'Arm64'
-          - os: windows-2022
-            qtVersion: '5.15.2'
-            qtArch: 'win32_msvc2019'
-            buildArch: 'X86'
 
     steps:
       - name: Checkout

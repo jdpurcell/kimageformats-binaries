@@ -17,22 +17,16 @@ if ($IsWindows) {
     # Workaround for https://developercommunity.visualstudio.com/t/10664660
     $env:CXXFLAGS += " -D_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR"
     $env:CFLAGS += " -D_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR"
-} elseif ($IsMacOS) {
-    if ($qtVersion -lt [version]'6.5.3') {
-        # Workaround for QTBUG-117484
-        sudo xcode-select --switch /Applications/Xcode_14.3.1.app
-    }
 }
 
 # Build
-$argApngQt6 = $qtVersion -lt [version]'6.0' ? "-DAPNG_QT6=OFF" : $null
 if ($IsMacOS) {
     $argDeviceArchs =
         $env:buildArch -eq 'X64' ? '-DCMAKE_OSX_ARCHITECTURES=x86_64' :
         $env:buildArch -in 'Arm64', 'Universal' ? '-DCMAKE_OSX_ARCHITECTURES=arm64' :
         $null
 }
-cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release $argDeviceArchs $argApngQt6
+cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release $argDeviceArchs
 ninja -C build
 
 if ($IsMacOS -and $env:buildArch -eq 'Universal') {

@@ -10,7 +10,6 @@ cd extra-cmake-modules
 git checkout $kfGitRef
 
 # Build
-$argQt6 = $qtVersion.Major -eq 6 ? '-DBUILD_WITH_QT6=ON' : $null
 if ($IsMacOS) {
     $argDeviceArchs =
         $env:buildArch -eq 'X64' ? '-DCMAKE_OSX_ARCHITECTURES=x86_64' :
@@ -18,7 +17,7 @@ if ($IsMacOS) {
         $env:buildArch -eq 'Universal' ? '-DCMAKE_OSX_ARCHITECTURES=x86_64;arm64' :
         $null
 }
-cmake -G Ninja -DCMAKE_INSTALL_PREFIX="$PWD/installed" -DCMAKE_BUILD_TYPE=Release $argQt6 $argDeviceArchs .
+cmake -G Ninja -DCMAKE_INSTALL_PREFIX="$PWD/installed" -DCMAKE_BUILD_TYPE=Release $argDeviceArchs .
 
 if ($IsWindows) {
     ninja install

@@ -133,9 +133,7 @@ function WriteManifest() {
     AddDependency 'libraw'
     AddDependency 'libavif' @('dav1d')
     AddDependency 'libheif' $null true
-    if ($kfGitRef -like 'v6.*') {
-        AddDependency 'jxrlib'
-    }
+    AddDependency 'jxrlib'
 
     $manifest | ConvertTo-Json -Depth 5 | Out-File -FilePath "$vcpkgManifestDir/vcpkg.json"
 }
