@@ -27,6 +27,9 @@ jobs:
             qtVersion: '6.9.3'
             qtArch: 'win64_msvc2022_arm64_cross_compiled'
             buildArch: 'Arm64'
+    env:
+      AUTOSIGN_REQUESTED: ${{ github.ref == 'refs/heads/master' }}
+      CAN_AUTOSIGN_WINDOWS: ${{ vars.AZURE_SIGNING_CERTIFICATE != '' }}
 
     steps:
       - name: Checkout
@@ -46,6 +49,22 @@ jobs:
           buildArch: ${{ matrix.buildArch }}
         shell: pwsh
         run: pwsh/buildapng.ps1
+
+      - name: Signing (Windows)
+        if: runner.os == 'Windows' && env.AUTOSIGN_REQUESTED == 'true' && env.CAN_AUTOSIGN_WINDOWS == 'true'
+        uses: azure/trusted-signing-action@v0
+        with:
+          azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          endpoint: ${{ vars.AZURE_ENDPOINT }}
+          trusted-signing-account-name: ${{ vars.AZURE_SIGNING_ACCOUNT }}
+          certificate-profile-name: ${{ vars.AZURE_SIGNING_CERTIFICATE }}
+          files-folder: QtApng/output
+          files-folder-filter: dll
+          file-digest: SHA256
+          timestamp-rfc3161: http://timestamp.acs.microsoft.com
+          timestamp-digest: SHA256
 
       - name: Upload artifact
         if: github.ref != 'refs/heads/master'
