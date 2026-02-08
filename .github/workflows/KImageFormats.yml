@@ -37,7 +37,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Install Qt
         uses: jdpurcell/install-qt-action@v5
@@ -61,13 +61,13 @@ jobs:
 
       - name: Signing (Windows)
         if: runner.os == 'Windows' && env.AUTOSIGN_REQUESTED == 'true' && env.CAN_AUTOSIGN_WINDOWS == 'true'
-        uses: azure/trusted-signing-action@v0
+        uses: azure/artifact-signing-action@v1
         with:
           azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
           azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
           endpoint: ${{ vars.AZURE_ENDPOINT }}
-          trusted-signing-account-name: ${{ vars.AZURE_SIGNING_ACCOUNT }}
+          signing-account-name: ${{ vars.AZURE_SIGNING_ACCOUNT }}
           certificate-profile-name: ${{ vars.AZURE_SIGNING_CERTIFICATE }}
           files-folder: KImageFormats/output
           files-folder-filter: dll
@@ -77,7 +77,7 @@ jobs:
 
       - name: Upload artifact
         if: github.ref != 'refs/heads/master'
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           path: KImageFormats/output
           name: KImageFormats-${{ runner.os }}-${{ matrix.qtVersion }}-${{ matrix.buildArch }}
