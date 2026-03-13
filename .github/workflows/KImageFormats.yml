@@ -3,7 +3,7 @@ on: [workflow_dispatch, pull_request]
 
 env:
   VCPKG_BINARY_SOURCES: 'clear;default,readwrite'
-  VCPKG_COMMIT_ID: 'e5a1490e1409d175932ef6014519e9ae149ddb7c'
+  VCPKG_COMMIT_ID: '47205630845bd49eaf16cdfb757cf9dfba144c52'
 
 jobs:
   build:
@@ -77,7 +77,7 @@ jobs:
 
       - name: Upload artifact
         if: github.ref != 'refs/heads/master'
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           path: KImageFormats/output
           name: KImageFormats-${{ runner.os }}-${{ matrix.qtVersion }}-${{ matrix.buildArch }}
