@@ -135,6 +135,9 @@ function WriteManifest() {
     AddDependency 'libheif' $null true
     AddDependency 'jxrlib'
 
+    # libde265 1.0.18 breaks HEIF decoder
+    AddOverride 'libde265' '1.0.16#1'
+
     $manifest | ConvertTo-Json -Depth 5 | Out-File -FilePath "$vcpkgManifestDir/vcpkg.json"
 }
 

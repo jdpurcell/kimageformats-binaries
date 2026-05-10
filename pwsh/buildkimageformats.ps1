@@ -8,6 +8,9 @@ $kfGitRef =
     $qtVersion -ge [version]'6.8.0' ? 'v6.24.0' :
     $qtVersion -ge [version]'6.7.0' ? 'v6.17.0' :
     $(throw 'Unsupported Qt version.')
+$kfTagVersion =
+    $kfGitRef -match '^v(\d+\.\d+\.\d+)$' ? [version]$Matches[1] :
+    $null
 $kfMajorVer = 6
 $kimgLibExt =
     $IsWindows ? '.dll' :
@@ -25,7 +28,10 @@ patch CMakeLists.txt "../util/kimageformats$kfMajorVer-find-libraw-vcpkg.patch"
 rm "cmake/find-modules/FindLibRaw.cmake"
 
 # Patch CMakeLists to work with vcpkg's jxrlib, bypassing KImageFormats' FindLibJXR module.
-patch CMakeLists.txt "../util/kimageformats$kfMajorVer-find-jxrlib-vcpkg.patch"
+$patchNameSuffix =
+    $kfTagVersion -and $kfTagVersion -lt [version]'6.26.0' ? '' :
+    '-b'
+patch CMakeLists.txt "../util/kimageformats$kfMajorVer-find-jxrlib-vcpkg$patchNameSuffix.patch"
 rm "cmake/find-modules/FindLibJXR.cmake"
 
 if ($IsLinux) {
@@ -55,8 +61,12 @@ if ($IsMacOS) {
         $null
 }
 
+$argJxrEnabled =
+    $kfTagVersion -and $kfTagVersion -lt [version]'6.26.0' ? '-DKIMAGEFORMATS_JXR=ON' :
+    '-DKIMAGEFORMATS_WITH_KNOWN_CRASHES_JXR=ON'
+
 # Build kimageformats
-cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$PWD/installed" -DKIMAGEFORMATS_JXL=ON -DKIMAGEFORMATS_HEIF=ON -DKIMAGEFORMATS_JXR=ON -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_INSTALLED_DIR="$env:VCPKG_ROOT/installed-$env:VCPKG_DEFAULT_TRIPLET" $argDeviceArchs .
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$PWD/installed" -DKIMAGEFORMATS_JXL=ON -DKIMAGEFORMATS_HEIF=ON $argJxrEnabled -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_INSTALLED_DIR="$env:VCPKG_ROOT/installed-$env:VCPKG_DEFAULT_TRIPLET" $argDeviceArchs .
 
 ninja
 ninja install
@@ -76,7 +86,7 @@ if ($IsMacOS -and $env:buildArch -eq 'Universal') {
 
     [Environment]::SetEnvironmentVariable("KF${kfMajorVer}Archive_DIR", [Environment]::GetEnvironmentVariable("KF${kfMajorVer}Archive_DIR_INTEL"))
 
-    cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$PWD/installed_intel" -DKIMAGEFORMATS_JXL=ON -DKIMAGEFORMATS_HEIF=ON -DKIMAGEFORMATS_JXR=ON -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_INSTALLED_DIR="$env:VCPKG_ROOT/installed-x64-osx" -DVCPKG_TARGET_TRIPLET="x64-osx" -DCMAKE_OSX_ARCHITECTURES="x86_64" .
+    cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$PWD/installed_intel" -DKIMAGEFORMATS_JXL=ON -DKIMAGEFORMATS_HEIF=ON $argJxrEnabled -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_INSTALLED_DIR="$env:VCPKG_ROOT/installed-x64-osx" -DVCPKG_TARGET_TRIPLET="x64-osx" -DCMAKE_OSX_ARCHITECTURES="x86_64" .
 
     ninja
     ninja install
