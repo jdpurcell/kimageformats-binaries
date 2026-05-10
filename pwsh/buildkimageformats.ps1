@@ -4,7 +4,7 @@ $qtVersion = [version](qmake -query QT_VERSION)
 Write-Host "Detected Qt version $qtVersion"
 
 $kfGitRef =
-    $qtVersion -ge [version]'6.9.0' ? 'v6.25.0' :
+    $qtVersion -ge [version]'6.9.0' ? 'v6.26.0' :
     $qtVersion -ge [version]'6.8.0' ? 'v6.24.0' :
     $qtVersion -ge [version]'6.7.0' ? 'v6.17.0' :
     $(throw 'Unsupported Qt version.')
