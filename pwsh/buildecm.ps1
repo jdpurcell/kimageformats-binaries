@@ -17,7 +17,10 @@ if ($IsMacOS) {
         $env:buildArch -eq 'Universal' ? '-DCMAKE_OSX_ARCHITECTURES=x86_64;arm64' :
         $null
 }
-cmake -G Ninja -DCMAKE_INSTALL_PREFIX="$PWD/installed" -DCMAKE_BUILD_TYPE=Release $argDeviceArchs .
+if ($env:QT_HOST_PATH) {
+    $argHostPath = "-DQT_HOST_PATH=$($env:QT_HOST_PATH -replace '\\', '/')"
+}
+cmake -G Ninja -DCMAKE_INSTALL_PREFIX="$PWD/installed" -DCMAKE_BUILD_TYPE=Release $argDeviceArchs $argHostPath .
 
 if ($IsWindows) {
     ninja install

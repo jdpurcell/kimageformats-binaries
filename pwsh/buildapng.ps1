@@ -26,7 +26,10 @@ if ($IsMacOS) {
         $env:buildArch -in 'Arm64', 'Universal' ? '-DCMAKE_OSX_ARCHITECTURES=arm64' :
         $null
 }
-cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release $argDeviceArchs
+if ($env:QT_HOST_PATH) {
+    $argHostPath = "-DQT_HOST_PATH=$($env:QT_HOST_PATH -replace '\\', '/')"
+}
+cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release $argDeviceArchs $argHostPath
 ninja -C build
 
 if ($IsMacOS -and $env:buildArch -eq 'Universal') {
