@@ -3,7 +3,7 @@ on: [workflow_dispatch, pull_request]
 
 env:
   VCPKG_BINARY_SOURCES: 'clear;default,readwrite'
-  VCPKG_COMMIT_ID: 'd592849579fb1fb22f87406b2184522ea21a8783'
+  VCPKG_COMMIT_ID: 'f87344cac03158cbf1467264565f1fd36b382a24'
 
 jobs:
   build:
