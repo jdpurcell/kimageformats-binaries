@@ -1,0 +1,10 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -164,6 +164,7 @@
+     kde_enable_exceptions()
+     target_include_directories(kimg_jxr PRIVATE ${LIBJXR_INCLUDE_DIRS})
+     target_link_libraries(kimg_jxr PRIVATE ${LIBJXR_LIBRARIES})
++    target_link_options(kimg_jxr PRIVATE -Wl,--no-fatal-warnings)
+     if(NOT MSVC)
+         target_compile_definitions(kimg_jxr PRIVATE __ANSI__)
+     endif()

@@ -97,6 +97,8 @@ function WriteOverlayPorts() {
 
     # Overlay: jxrlib
     CopyBuiltinPort 'jxrlib'
+    Copy-Item -Path "$env:GITHUB_WORKSPACE/util/vcpkg-overlay-jxrlib-guiddef.patch" -Destination "$env:VCPKG_OVERLAY_PORTS/jxrlib/guiddef.patch" -Force
+    patch "$env:VCPKG_OVERLAY_PORTS/jxrlib/CMakeLists.txt" "$env:GITHUB_WORKSPACE/util/vcpkg-overlay-jxrlib-cmakelists.patch"
     patch "$env:VCPKG_OVERLAY_PORTS/jxrlib/portfile.cmake" "$env:GITHUB_WORKSPACE/util/vcpkg-overlay-jxrlib-portfile.patch"
 }
 

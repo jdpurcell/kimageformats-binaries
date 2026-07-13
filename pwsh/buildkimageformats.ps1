@@ -35,8 +35,11 @@ patch CMakeLists.txt "../util/kimageformats$kfMajorVer-find-jxrlib-vcpkg$patchNa
 rm "cmake/find-modules/FindLibJXR.cmake"
 
 if ($IsLinux) {
-    # On Linux, ECM requests errors to be treated as warnings, which we need to suppress to build successfully
-    patch src/imageformats/CMakeLists.txt "../util/kimageformats$kfMajorVer-no-fatal-warnings-jxrlib-linux.patch"
+    # On Linux, ECM treats linker warnings as errors; disable that behavior for the JXR plugin
+    $patchNameSuffix =
+        $kfTagVersion -and $kfTagVersion -lt [version]'6.28.0' ? '' :
+        '-b'
+    patch src/imageformats/CMakeLists.txt "../util/kimageformats$kfMajorVer-no-fatal-warnings-jxrlib-linux$patchNameSuffix.patch"
 }
 
 # Dependencies
