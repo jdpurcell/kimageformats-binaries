@@ -2,6 +2,10 @@
 
 $kfGitRef = $args[0]
 
+# Some runner images have this set, but we want to let the pinned
+# vcpkg version select compatible build tools
+Remove-Item Env:VCPKG_FORCE_SYSTEM_BINARIES -ErrorAction SilentlyContinue
+
 # Bootstrap VCPKG again
 if ($IsWindows) {
     & "$env:VCPKG_ROOT/bootstrap-vcpkg.bat"

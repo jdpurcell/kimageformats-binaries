@@ -4,7 +4,7 @@ $qtVersion = [version](qmake -query QT_VERSION)
 Write-Host "Detected Qt version $qtVersion"
 
 $kfGitRef =
-    $qtVersion -ge [version]'6.9.0' ? 'v6.28.0' :
+    $qtVersion -ge [version]'6.9.0' ? 'v6.29.0' :
     $qtVersion -ge [version]'6.8.0' ? 'v6.24.0' :
     $qtVersion -ge [version]'6.7.0' ? 'v6.17.0' :
     $(throw 'Unsupported Qt version.')
@@ -139,7 +139,9 @@ if ($IsMacOS) {
         $oldValue = "$(Get-Location)/karchive/$installDirName/lib/$karchLibName.dylib"
         $newValue = "@rpath/$karchLibName.dylib"
         install_name_tool -id $newValue "$prefix_out/$karchLibName.dylib"
-        foreach ($kimgLibName in @('kimg_kra', 'kimg_ora')) {
+        $kimgLibNames = @('kimg_kra') +
+            ($kfTagVersion -and $kfTagVersion -lt [version]'6.29.0' ? @('kimg_ora') : @())
+        foreach ($kimgLibName in $kimgLibNames) {
             install_name_tool -change $oldValue $newValue "$prefix_out/$kimgLibName$kimgLibExt"
         }
     }
