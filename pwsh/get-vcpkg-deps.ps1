@@ -98,12 +98,6 @@ function WriteOverlayPorts() {
     function CopyBuiltinPort($name) {
         Copy-Item -Path "$env:VCPKG_ROOT/ports/$name" -Destination "$env:VCPKG_OVERLAY_PORTS" -Recurse
     }
-
-    # Overlay: jxrlib
-    CopyBuiltinPort 'jxrlib'
-    Copy-Item -Path "$env:GITHUB_WORKSPACE/util/vcpkg-overlay-jxrlib-guiddef.patch" -Destination "$env:VCPKG_OVERLAY_PORTS/jxrlib/guiddef.patch" -Force
-    patch "$env:VCPKG_OVERLAY_PORTS/jxrlib/CMakeLists.txt" "$env:GITHUB_WORKSPACE/util/vcpkg-overlay-jxrlib-cmakelists.patch"
-    patch "$env:VCPKG_OVERLAY_PORTS/jxrlib/portfile.cmake" "$env:GITHUB_WORKSPACE/util/vcpkg-overlay-jxrlib-portfile.patch"
 }
 
 # Create vcpkg manifest directory
@@ -138,7 +132,7 @@ function WriteManifest() {
     AddDependency 'openexr'
     AddDependency 'libraw'
     AddDependency 'libavif' @('dav1d')
-    AddDependency 'libheif' $null true
+    AddDependency 'libheif' @('libde265') $true
     AddDependency 'jxrlib'
 
     $manifest | ConvertTo-Json -Depth 5 | Out-File -FilePath "$vcpkgManifestDir/vcpkg.json"
