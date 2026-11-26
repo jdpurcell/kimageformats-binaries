@@ -18,9 +18,9 @@ if ($IsMacOS) {
         $null
 }
 if ($env:QT_HOST_PATH) {
-    $argHostPath = "-DQT_HOST_PATH=$($env:QT_HOST_PATH -replace '\\', '/')"
+    $argHostPathCheck = '-DQT_REQUIRE_HOST_PATH_CHECK=ON'
 }
-cmake -G Ninja -DCMAKE_INSTALL_PREFIX="$PWD/installed" -DCMAKE_BUILD_TYPE=Release $argDeviceArchs $argHostPath .
+cmake -G Ninja -DCMAKE_INSTALL_PREFIX="$PWD/installed" -DCMAKE_BUILD_TYPE=Release $argDeviceArchs $argHostPathCheck .
 
 if ($IsWindows) {
     ninja install

@@ -65,14 +65,14 @@ if ($IsMacOS) {
         $null
 }
 if ($env:QT_HOST_PATH) {
-    $argHostPath = "-DQT_HOST_PATH=$($env:QT_HOST_PATH -replace '\\', '/')"
+    $argHostPathCheck = '-DQT_REQUIRE_HOST_PATH_CHECK=ON'
 }
 $argJxrEnabled =
     $kfTagVersion -and $kfTagVersion -lt [version]'6.26.0' ? '-DKIMAGEFORMATS_JXR=ON' :
     '-DKIMAGEFORMATS_WITH_KNOWN_CRASHES_JXR=ON'
 
 # Build kimageformats
-cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$PWD/installed" -DKIMAGEFORMATS_JXL=ON -DKIMAGEFORMATS_HEIF=ON $argJxrEnabled -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_INSTALLED_DIR="$env:VCPKG_ROOT/installed-$env:VCPKG_DEFAULT_TRIPLET" $argDeviceArchs $argHostPath .
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$PWD/installed" -DKIMAGEFORMATS_JXL=ON -DKIMAGEFORMATS_HEIF=ON $argJxrEnabled -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_INSTALLED_DIR="$env:VCPKG_ROOT/installed-$env:VCPKG_DEFAULT_TRIPLET" $argDeviceArchs $argHostPathCheck .
 
 ninja
 ninja install

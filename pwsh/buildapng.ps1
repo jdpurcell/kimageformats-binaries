@@ -27,9 +27,9 @@ if ($IsMacOS) {
         $null
 }
 if ($env:QT_HOST_PATH) {
-    $argHostPath = "-DQT_HOST_PATH=$($env:QT_HOST_PATH -replace '\\', '/')"
+    $argHostPathCheck = '-DQT_REQUIRE_HOST_PATH_CHECK=ON'
 }
-cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release $argDeviceArchs $argHostPath
+cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release $argDeviceArchs $argHostPathCheck
 ninja -C build
 
 if ($IsMacOS -and $env:buildArch -eq 'Universal') {
